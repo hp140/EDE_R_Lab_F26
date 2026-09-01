@@ -1,6 +1,6 @@
 ---
 title: "Assignment 1: Introduction to Data Exploration"
-author: "Student Name"
+author: "Henry Park"
 output: pdf_document
 ---
 
@@ -22,15 +22,15 @@ Enter answers to the questions just below the >Answer: prompt.
 
 1. What are your previous experiences with data analytics, R, and Git? Include both formal and informal training.
 
-> Answer: 
+> Answer: I have some previous experience visualizing data in R through a statistics course, and I have performed data analysis fairly often through research experiences. However, I haven't taken many intensive, dedicated courses on understanding statistical software. 
 
 2. Are there any components of the course about which you feel confident?
 
-> Answer: 
+> Answer: I feel fairly confident about the analysis portion of the course--understanding patterns in data, drawing conclusions, etc. This was a skill that was demanded often in research so I think I'm more familiar with this than other components of the class. 
 
 3. Are there any components of the course about which you feel apprehensive?
 
-> Answer: 
+> Answer: I'm most apprehensive about the technical aspects--getting R to work, knowing what are the right steps to take in a lab project, and figuring out how to troubleshoot errors. I'm hoping I make a lot of progress on these things this semester. 
 
 
 ## 2) GitHub
