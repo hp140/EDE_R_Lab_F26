@@ -131,3 +131,14 @@ Before moving on, experiment with this file:
 6.  Insert a new R code chunk and perform a simple calculation.
 
 The goal is not to memorize the syntax. The goal is to become comfortable with the relationship between **source text, executable code, and the knitted report**.
+
+**test sentence in bold text format**
+*test calculations, header in italics*
+
+```{r test run}
+numberset <- c(50, 42, 46, 19, 83)
+numberset
+```
+```{r median}
+median(numberset)
+```
