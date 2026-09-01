@@ -65,7 +65,7 @@ One advantage of R Markdown is that the explanation and the analysis can remain 
 Suppose we have five environmental temperature observations:
 
 ```{r temperature-data}
-temperature <- c(18, 20, 19, 22, 21)
+temperature <- c(18, 20, 19, 22, 35)
 temperature
 ```
 
