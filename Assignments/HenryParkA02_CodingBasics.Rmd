@@ -1,6 +1,6 @@
 ---
 title: "Assignment 2: Coding Basics"
-author: "Student Name"
+author: "Henry Park"
 output: pdf_document
 geometry: margin=2.54cm
 editor_options: 
