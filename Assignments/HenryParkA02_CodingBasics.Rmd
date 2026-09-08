@@ -26,11 +26,11 @@ This exercise accompanies the lessons/labs in Environmental Data Explorations on
 
 Set the following R code chunk so that it runs when knit, but no messages, errors, or any output is shown. The code itself, however, should be displayed.
 
-```{r project.setup}
+```{r project.setup, include=FALSE}
 #Import libraries
 library(tidyverse)
 library(knitr)
-
+knitr::opts_chunk$set(echo = TRUE)
 ```
 
 
@@ -45,12 +45,13 @@ library(knitr)
 4.  Insert comments in your code to describe what you are doing.
 
 ```{r basics 1}
-#1. 
-seq(1, 55, 5)
-#2. 
-
-#3. 
-
+#1. This function creates a sequence from 1 to 55, moving up in increments of five. The sequence is called "fives."
+fives <- seq(1, 55, 5)
+#2. These functions find the mean and median of the fives sequence.
+mean(fives)
+median(fives)
+#3. This function tests whether the mean of the fives sequence is greater than its median.
+mean(fives) > median(fives)
 ```
 
 ## Coding Basics - Part 3
@@ -64,15 +65,27 @@ seq(1, 55, 5)
 8.  Label the columns of your data frame with informative titles.
 
 ```{r basics 2}
+names <- c("Ravi", "Kyle", "Amie", "Cece") #Vector Type: character
+scores <- c(98, 79, 87, 92) #Vector Type: numeric
+scholarship <- c(TRUE,FALSE,FALSE,TRUE) #Vector Type: logical
 
-
+student_data <- data.frame(names,scores,scholarship)
 ```
 
 9.  QUESTION: How is this data frame different from a matrix?
 
-> Answer:
+> Answer: A matrix must contain only one type of data, such as numeric data--whereas this data frame can carry multiple different types of values, such as character-based names and numeric data.
 
 10. Create a function with one input. In this function, use `if`...`else` to evaluate the value of the input: if it is greater than 50, print the word "Pass"; otherwise print the word "Fail". 
+```{r basics question 10}
+fiftytest <- function(x)
+  ifelse(x > 50, "Pass", "Fail")
+
+fiftytestone <- fiftytest(52)
+fiftytesttwo <- fiftytest(23)
+fiftytestone
+fiftytesttwo
+```
 
 11. Create a second function that does the exact same thing as the previous one but uses `ifelse()` instead if `if`...`else `. 
 
