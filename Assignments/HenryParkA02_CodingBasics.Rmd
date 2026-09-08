@@ -77,15 +77,6 @@ student_data <- data.frame(names,scores,scholarship)
 > Answer: A matrix must contain only one type of data, such as numeric data--whereas this data frame can carry multiple different types of values, such as character-based names and numeric data.
 
 10. Create a function with one input. In this function, use `if`...`else` to evaluate the value of the input: if it is greater than 50, print the word "Pass"; otherwise print the word "Fail". 
-```{r basics question 10}
-fiftytest <- function(x)
-  ifelse(x > 50, "Pass", "Fail")
-
-fiftytestone <- fiftytest(52)
-fiftytesttwo <- fiftytest(23)
-fiftytestone
-fiftytesttwo
-```
 
 11. Create a second function that does the exact same thing as the previous one but uses `ifelse()` instead if `if`...`else `. 
 
@@ -95,21 +86,46 @@ fiftytesttwo
 
 ```{r basics 3}
 #10. Create a function using if...else
+fiftytestone <- function(x) {
+  if (x>50)
+    "Pass"
+  else
+    "Fail"
+}
+
+fiftyvar1 <- fiftytestone(78)
+fiftyvar2 <- fiftytestone(11)
+fiftyvar1
+fiftyvar2
 
 #11. Create a function using ifelse()
+fiftytesttwo <- function(x)
+  ifelse(x > 50, "Pass", "Fail")
+
+fiftyvar3 <- fiftytesttwo(52)
+fiftyvar4 <- fiftytesttwo(23)
+fiftyvar3
+fiftyvar4
 
 #12a. Run the first function with the value 52.5
+fiftyvar5 <- fiftytestone(52.5)
+fiftyvar5
 
 #12b. Run the second function with the value 52.5
+fiftyvar6 <- fiftytesttwo(52.5)
+fiftyvar6
 
 #13a. Run the first function with the vector of test scores
+#This function did not work.
 
 #13b. Run the second function with the vector of test scores
+fiftyvar8 <- fiftytesttwo(scores)
+fiftyvar8
 ```
 
 14. QUESTION: Which option of `if`...`else` vs. `ifelse` worked? Why? (Hint: search the web for "R vectorization")
 
-> Answer:
+> Answer: Only the ifelse option, in my case called fiftytesttwo, worked. The error message returned stated that "the condition has length > 1." After looking into R vectorization, I think the ifelse function worked because it is compressed into a single test/operation performed on the vector, whereas the 'if'...'else' functions were performing multiple operations and failed after the first one.
 
 
 ## Crafting reports - Part 4
@@ -120,7 +136,7 @@ Add a table of contents to your document and knit to a PDF. Submit your PDF to C
 
 ### Github link
 
-> Answer:
+> Answer: https://github.com/hp140/EDE_R_Lab_F26/tree/main
 
 
 **NOTE** Before knitting, you'll need to comment out the call to the function in Q13 that does not work. (A document can't knit if the code it contains causes an error!)
