@@ -167,8 +167,9 @@ fix.early.dates <- function(d, cutoff) {
        return(d)
 }
 
-fixed_date_obj_past <- fix.early.dates(date_obj_past,cutoff=24) 
+fixed_date_obj_past <- fix.early.dates(date_obj_past,cutoff=26) 
 #cutoff could be the current year to be more general or any other depending on data set 
+#data that could still be either century will likely come in four digits to begin with
 
 
 fixed_date_obj_past
