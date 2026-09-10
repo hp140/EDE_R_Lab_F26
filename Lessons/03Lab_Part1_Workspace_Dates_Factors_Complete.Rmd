@@ -128,13 +128,13 @@ More info on lubridate [here][<https://cran.r-project.org/web/packages/lubridate
 library(lubridate)
 
 #Ex1
-str_today <- "2026-sep-10"
+str_today <- "2026-sep-10" # %Y-%b-%d
 #Since the format is year-month-day we will use function ymd()
 date_obj_today <- ymd(str_today)
 date_obj_today
 
 #Ex2
-str_today2 <- "Sep 10, 2026"
+str_today2 <- "Sep 10, 2026" 
 #Since the format is month-day-year we will use function mdy()
 date_obj_today <- mdy(str_today2)
 date_obj_today

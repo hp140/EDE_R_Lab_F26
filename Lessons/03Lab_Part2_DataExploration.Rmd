@@ -23,8 +23,8 @@ plots → write it up.** You are diagnosing, not cleaning.
 
 ```{r setup, message = FALSE}
 # Load packages
-library(tidyverse)
-library(lubridate)
+library(tidyverse);
+library(lubridate);
 library(here)
 
 # Confirm the project root with here()
@@ -32,6 +32,7 @@ here()
 
 # Import the raw PM2.5 file (project-relative path via here())
 pm25 <- read.csv(
+  here("Data/Raw/EPAair_PM25_NC2025_raw.csv")
   #---- ENTER THE FILE PATH HERE, using here() ----
 )
 
