@@ -57,7 +57,9 @@ units is PM2.5 reported?
 
 ```{r inspect}
 # glimpse the data; check dim() and names()
-
+glimpse(pm25)
+dim(pm25)
+names(pm25)
 
 ```
 
