@@ -69,18 +69,17 @@ Neonics_data <- read.csv(
   file=here("Data/Raw/ECOTOX_Neonicotinoids_Insects_raw.txt"), sep = "|"
   )
 
-
-
+#The dataset's dimensions is 8478 rows/objects by 76 columns/variables.
 ```
 
 6.  Using the `summary` function on the "Effect" column, determine the most common effects that are studied. Why might these effects specifically be of interest? [Tip: The `sort()` command is useful for listing the values in order of magnitude...]
 
 ```{r Q6}
-
-
+Effects <- data.frame(Neonics_data$Effect)
+summary(Effects)
 ```
 
-> Answer:
+> Answer: The most common effect which was studied was Mortality, totaling at 2,687 occurrences, followed by Population at 1,377 occurrences. These two effects might be useful to study to consider how insecticides are affecting insect populations, observing mortality rates and seeing the ebbs and flows of the general population and which groups of the population are more or less resistant to the insecticide.
 
 
 7.  Using the `summary` function, determine the six most commonly studied species in the dataset (common name). What do these species have in common, and why might they be of interest over other insects? Feel free to do a brief internet search for more information if needed.[TIP: Explore the help on the `summary()` function, in particular the `maxsum` argument...]
