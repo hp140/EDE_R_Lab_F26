@@ -65,6 +65,10 @@ print(Litter)
 5.  What are the dimensions of the dataset?
 
 ```{r Q5}
+Neonics_data <- read.csv(
+  file=here("Data/Raw/ECOTOX_Neonicotinoids_Insects_raw.txt"), sep = "|"
+  )
+
 
 
 ```
