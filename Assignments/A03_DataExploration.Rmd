@@ -75,7 +75,7 @@ Neonics_data <- read.csv(
 6.  Using the `summary` function on the "Effect" column, determine the most common effects that are studied. Why might these effects specifically be of interest? [Tip: The `sort()` command is useful for listing the values in order of magnitude...]
 
 ```{r Q6}
-Effects <- data.frame(Neonics_data$Effect)
+Effects <- factor(Neonics_data$Effect)
 summary(Effects)
 ```
 
@@ -85,8 +85,8 @@ summary(Effects)
 7.  Using the `summary` function, determine the six most commonly studied species in the dataset (common name). What do these species have in common, and why might they be of interest over other insects? Feel free to do a brief internet search for more information if needed.[TIP: Explore the help on the `summary()` function, in particular the `maxsum` argument...]
 
 ```{r Q7}
-
-
+Common_Names <- factor(Neonics_data$X.Species.Common.Name)
+summary(Common_Names, maxsum=7)
 ```
 
 > Answer:
