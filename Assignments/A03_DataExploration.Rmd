@@ -89,16 +89,15 @@ Common_Names <- factor(Neonics_data$X.Species.Common.Name)
 summary(Common_Names, maxsum=7)
 ```
 
-> Answer:
+> Answer: The six most commonly-studied species are: Honey Bees, Carniolan Honey Bees, Parasitic Wasps, Bumble Bees, Italian Honeybees, and Asiatic Honey Bees. Most of these species are bee species, and all in all they are all hymenoptera species. Notably, bee species are well-established pollinators who interact often with agriculture and play a large role in it, so they are a critical species to maintain stable populations especially when considering an insecticide that might endanger insect populations. 
 
 8.  Concentrations are always a numeric value. What is the class of `Conc.1.Mean..Author..` column in the dataset, and why is it not numeric? [Tip: Viewing the dataframe may be helpful...]
 
 ```{r Q8}
-
-
+class(Neonics_data$X.Conc.1.Mean..Author..)
 ```
 
-> Answer:
+> Answer: The class for 'Conc.1.Mean..Author..' column is character-based. Looking at the values in the dataframe itself, there are a lot of other symbols in the values beyond just the number digits themselves, and R may not recognize the other symbols and thus be forced to classify the column as a character-based one. 
 
 ## Explore your data graphically (Neonics)
 
@@ -107,41 +106,50 @@ summary(Common_Names, maxsum=7)
 [**TIP**: Add `theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))` to the end of your plot command to rotate and align the X-axis labels...]
 
 ```{r Q11}
-
-
+ggplot(Neonics_data, aes(x=Endpoint.)) +
+  geom_bar() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
 ```
 
-> Answer:
+> Answer: The two most common end points are LOEL and NOEL. LOEL is defined as Lowest Observed Effect Level and NOEL is defined as No Observed Effect Level. 
 
 ## Explore your data (Litter)
 
 10. Determine the class of collectDate. Is it a date? If not, change to a date and confirm the new class of the variable. Using the `unique` function, determine which dates litter was sampled in August 2018.
 
 ```{r Q12}
+Litter_data <- read.csv(
+  file=here("Data/Raw/NEON_NIWO_Litter_massdata_2016-26_raw.csv")
+  )
 
+class(Litter_data$collectDate)
+Litter_data$collectDate <- ymd(Litter_data$collectDate)
 
+unique(Litter_data$collectDate)
 ```
+
+> Answer: The dates litter was sampled in August 2018 was: 2018-08-02, 2018-08-30.
 
 11. Using the `unique` function, list the different plotIDs sampled at Niwot Ridge. How is the information obtained from `unique` different from that obtained from `summary`?
 
 ```{r Q13}
-
-
+unique(Litter_data$plotID)
 ```
 
-> Answer:
+> Answer: The different IDS include: "NIWO_047" "NIWO_061" "NIWO_062" "NIWO_057" "NIWO_058" "NIWO_064" "NIWO_051" "NIWO_067" "NIWO_063" "NIWO_041" "NIWO_046" "NIWO_040". The unique function shows off all of the different values once no matter how many instances are in the original dataset, and summary provides summary statistics and the frequency that each unique value appeared.
 
 12. Create a bar graph of functionalGroup counts. This shows you what type of litter is collected at the Niwot Ridge sites. Notice that litter types are fairly equally distributed across the Niwot Ridge sites.
 
 ```{r Q14}
-
+ggplot(Litter_data, aes(x=functionalGroup)) +
+  geom_bar()
 
 ```
 
 
 What type(s) of litter tend to have the highest biomass at these sites?
 
-> Answer:
+> Answer: Needles appear to have the highest biomass at these sites. 
 
 13. Write a short data-exploration summary for Neonics.
 
