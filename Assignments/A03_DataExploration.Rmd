@@ -32,8 +32,15 @@ This exercise accompanies the lessons in Environmental Data Exploration M3: Data
 1.  Load necessary packages (tidyverse, lubridate, here), check your current working directory and upload two datasets: the ECOTOX neonicotinoid dataset (ECOTOX_Neonicotinoids_Insects_raw.csv) and the Niwot Ridge NEON dataset for litter and woody debris (NEON_NIWO_Litter_massdata_2016-26_raw.csv). Name these datasets "Neonics" and "Litter", respectively.
 
 ```{r setup,  message = FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse);
+library(lubridate);
+library(here)
 
-
+Neonics <- here("Data/Raw/ECOTOX_Neonicotinoids_Insects_raw.txt")
+print(Neonics)
+Litter <- here("Data/Raw/NEON_NIWO_Litter_massdata_2016-26_raw.csv")
+print(Litter)
 ```
 
 ## Learn about your system
