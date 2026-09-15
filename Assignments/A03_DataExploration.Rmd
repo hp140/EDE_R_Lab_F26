@@ -38,9 +38,7 @@ library(lubridate);
 library(here)
 
 Neonics <- here("Data/Raw/ECOTOX_Neonicotinoids_Insects_raw.txt")
-print(Neonics)
 Litter <- here("Data/Raw/NEON_NIWO_Litter_massdata_2016-26_raw.csv")
-print(Litter)
 ```
 
 ## Learn about your system
@@ -153,14 +151,14 @@ What type(s) of litter tend to have the highest biomass at these sites?
 
 13. Write a short data-exploration summary for Neonics.
 
-> - **One key characteristic:** 
-> - **One data-quality issue:** 
-> - **One interesting pattern:** 
-> - **One question for further analysis:** 
+> - **One key characteristic:** Conducting 8748 insecticide tests on various insect populations, observing characteristics of certain effects such as mortality rates and population changes.
+> - **One data-quality issue:** Certain elements of the data are not classified properly, such as 'X.Conc.1.Mean..Author..' introducing unknown characters into a numeric column and forcing it to be classified as a character column. 
+> - **One interesting pattern:** Plotting out the Endpoints shows most the test studies measuring LOEL and NOEL, measuring the lowest possible point where an insecticide causes an adverse effect or measuring levels where no visible effect is noticeable. 
+> - **One question for further analysis:** Which insecticides cause adverse effects along a select number of insect species, and which are particularly lethal across all insect species? 
 
-14. Write a short data-exploration summary for Litter.
+14. Write a short data-exploration summary for Litter. 
 
-> - **One key characteristic:** 
-> - **One data-quality issue:** 
-> - **One interesting pattern:** 
-> - **One question for further analysis:** 
+> - **One key characteristic:** Conducting 4443 checking tests across various locations to observe quantities of wood litter, categorized by litter class and biomass.
+> - **One data-quality issue:** Certain data columns were not yet transformed into a usable format for analysis, such as collectDate classified as general character-based data and not specific Dates. 
+> - **One interesting pattern:** Biomass totals for various types of wood litter were relatively even across the board, but needles skewed with the largest amount of biomass across all tests. 
+> - **One question for further analysis:** How do biomass results change over time as ecosystems change and are affected by climate change in future years of analysis? Are there trends of litter totals moving up or down? 
