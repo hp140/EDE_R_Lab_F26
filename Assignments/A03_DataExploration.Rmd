@@ -47,18 +47,18 @@ print(Litter)
 
 2.  The neonicotinoid dataset was collected from the Environmental Protection Agency's ECOTOX Knowledgebase, a database for ecotoxicology research. Neonicotinoids are a class of insecticides used widely in agriculture. The dataset that has been pulled includes all studies published on insects. Why might we be interested in the ecotoxicology of neonicotinoids on insects? Feel free to do a brief internet search if you feel you need more background information.
 
-> Answer:
+> Answer: One possible reason for investigating this link might be to examine what impact neonicotinoids have on different insect populations.There are many insect species which perform important natural functions in the world, and understanding if a certain class of insecticide might potentially threaten these insect species is valuable information to determmine if neonicotinoids are a more useful or a more harmful chemical to use. 
 
 3.  The Niwot Ridge litter and woody debris dataset was collected from the National Ecological Observatory Network, which collectively includes 81 aquatic and terrestrial sites across 20 ecoclimatic domains. 32 of these sites sample forest litter and woody debris, and we will focus on the Niwot Ridge long-term ecological research (LTER) station in Colorado. Why might we be interested in studying litter and woody debris that falls to the ground in forests? Feel free to do a brief internet search if you feel you need more background information.
 
-> Answer:
+> Answer: After searching up on the subject, I learned that forest litter and debris performs some important environmental functions. Notably, two aspects of it I had learned about was that forest litter creates an environment suitable for certain organisms, such as other plants, fungi, lichens, and insects. Forest litter also contributes to the humidity that can sustain vegetation during dry spells. It might therefore be important to monitor the levels of forest litter to see the overall health of an ecosystem. 
 
 4.  How is litter and woody debris sampled as part of the NEON network? Read the NEON_Litterfall_UserGuide.pdf document to learn more. List three pieces of salient information about the sampling methods here:
 
 > Answer: 
- 1.
- 2.
- 3. 
+ 1.Each sampling site used a mix of an elevated trap and a ground-level trap for collection. 
+ 2.Samples were collected at different time intervals for both trap categories.
+ 3.For sampling purposes, debris were divided into 'functional groups' such as leaves, needles, twigs, etc.
 
 ## Obtain basic summaries of your data (Neonics)
 
