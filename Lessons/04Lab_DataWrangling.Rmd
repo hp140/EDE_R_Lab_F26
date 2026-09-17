@@ -1,0 +1,142 @@
+---
+title: "M4 - Lab 4 - Data Wrangling"
+subtitle: "Environmental Data Exploration"
+author: "John Fay & Luana Lima"
+output: pdf_document
+geometry: margin=2.54cm
+editor_options: 
+  chunk_output_type: console
+---
+
+## Objectives
+1. Answer questions on M3/A3
+2. Practice building readable wrangling pipelines
+3. Reshape data with `pivot_longer()` and `pivot_wider()`
+
+## Set up your session
+
+Today we will work with the same dataset from our lesson, the North Temperate Lakes Long-Term Ecological Research Station. The NTL-LTER is located in the boreal zone in northern Wisconsin, USA. We will use the [chemical and physical limnology dataset](https://portal.edirepository.org/nis/mapbrowse?packageid=knb-lter-ntl.71.5), running from 1984-2016. 
+
+```{r workspace setup, message = FALSE}
+#Install packages
+library(tidyverse)
+library(here)
+
+#Read in the data
+NTL.phys.data <- read.csv(
+  file=here("Data/Raw/NTL-LTER_Lake_ChemistryPhysics_Raw.csv")
+)
+
+#Show the datatype of the 'sampledate' column
+class(NTL.phys.data$sampledate)
+glimpse(NTL.phys.data$sampledate)
+
+# Date conversion 
+NTL.phys.data$sampledate <- mdy(NTL.phys.data$sampledate)
+```
+
+
+## Filter
+
+Filtering allows us to choose certain rows (observations) in our dataset.
+-   The 1st parameter in the filter function is the dataframe we wish to filter. 
+-   The 2nd on is the **filter expression**:
+   -    `depth == 0` keeps rows with depth equal to zero (surface)
+   -    `lakename %in% c("Paul Lake", "Peter Lake")` keeps Paul & Peter lake rows
+   -    `daynum %in% c(152:304)` keeps rows with `daynum` values between 152 and 304
+   
+```{r filter data}
+# note the data types of these two columns
+class(NTL.phys.data$lakeid)
+class(NTL.phys.data$depth)
+
+# dplyr filtering 
+NTL.phys.data.surface <- filter(NTL.phys.data, depth == 0) 
+
+# Choose multiple conditions to filter
+summary(NTL.phys.data$lakename)
+NTL.phys.data.PeterPaul <- 
+  filter(NTL.phys.data, lakename %in% c("Paul Lake", "Peter Lake"))
+
+# Choose a range of conditions of a numeric or integer variable
+summary(NTL.phys.data$daynum)
+NTL.phys.data.JunethruOctober <- filter(NTL.phys.data, daynum %in% c(152:304))
+
+```
+
+```{r Exercise 1 & 2}
+# Exercise 1: 
+# filter NTL.phys.data for the year 1999
+# what code do you need to use, based on the class of the variable?
+
+
+# Exercise 2: 
+# filter NTL.phys.data for Tuesday Lake from 1990 through 1999.
+
+
+```
+
+Question: Why don't we filter using row numbers?
+
+> Answer: 
+
+---
+
+## Pipes
+
+Pipe is another method to wrangle datasets that looks cleaner and is easier to read.  We designate a pipe with `%>%`. A good way to think about the function of a pipe is with the word "then." 
+
+Let's say we want to take our raw dataset (NTL.phys.data), *then* filter the data for Peter and Paul lakes, *then* select temperature and observation information, and *then* add a column for temperature in Fahrenheit. 
+
+
+```{r Exercise 3 & 4}
+#Example using pipes to wrangle data: 
+#Add pipes in the correct place below
+NTL.phys.data.processed <- 
+  NTL.phys.data
+  filter(lakename == "Paul Lake" | lakename == "Peter Lake") 
+  select(lakename, sampledate:temperature_C) 
+  mutate(temperature_F = (temperature_C*9/5) + 32)
+
+#Exercise 3: Using a pipe filter NTL.phys.data for Tuesday Lake from 1990 
+# through 1999 and observations collected during July. 
+
+  
+
+#Exercise 4: Using the data from part 3, a pipe, and the summarize() function, 
+# find the mean surface water temperature. 
+# (hint: in this dataset, surface measurements have depth == 0). 
+
+  
+```
+
+Note: There is no difference between summarize() and summarise() in `dplyr`. They are aliases and perform exactly the same operation. Both are maintained and valid.
+
+```{r}
+#Exercise 5: Using the NTL.phys.data.processed find the mean temperature for 
+#Peter and Paul lake separately.
+
+
+```
+
+The argument `.groups = "drop"` is not strictly necessary in this particular workflow. It is mainly good practice in case you perform additional operations on the summary data.
+
+## Reshape Data
+
+Use `pivot_longer()` to make a dataset longer and `pivot_wider()` to make it wider.
+
+```{r Exercise 6 & 7}
+#Exercise 5: Pivot irradiance data (measured in the water column and measured
+#  on the deck of the sampling boat) into one column using pivot_longer. Name
+#  the new column holding the irradiance type as "Irradiance_Type", and name the
+#  new column holding the irradiance values as "Irradiance_Value".
+
+
+
+#Exercise 6: Pivot temperature_C into separate columns based on depth. First
+# select the identifying variables needed to make each row unique, i.e, you may 
+# want to remove other measurements that are also dependent on depth.
+
+
+
+```

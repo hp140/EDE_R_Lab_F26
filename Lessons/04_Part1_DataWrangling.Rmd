@@ -1,0 +1,242 @@
+---
+title: "M4: Data Wrangling - Part 1 - Selecting, Filtering, and Transforming Data"
+subtitle: "Environmental Data Exploration"
+author: "John Fay & Luana Lima"
+output: pdf_document
+geometry: margin=2.54cm
+editor_options: 
+  chunk_output_type: console
+---
+
+## Objectives
+
+1. Explain where data wrangling fits in a reproducible data workflow
+2. Use `filter()`, `arrange()`, `select()`, and `mutate()` from package "dplyr" to transform data
+3. Combine multiple wrangling steps in a readable pipeline
+4. Save a processed dataset without overwriting the raw data
+
+
+## Set up your session
+
+Today we will work with a dataset from the [North Temperate Lakes Long-Term Ecological Research Station](https://lter.limnology.wisc.edu/about/overview). The NTL-LTER is located in the boreal zone in northern Wisconsin, USA. We will use the [chemical and physical limnology dataset](https://lter.limnology.wisc.edu/content/cascade-project-north-temperate-lakes-lter-core-data-physical-and-chemical-limnology-1984), running from 1984-2016. 
+
+Opening discussion: why might we be interested in long-term observations of temperature, oxygen, and light in lakes?
+
+> Add notes here: 
+
+```{r setup workspace, message = FALSE}
+library(tidyverse)
+
+NTL.phys.data <- read.csv(
+  here("Data/Raw/NTL-LTER_Lake_ChemistryPhysics_Raw.csv")
+)
+
+colnames(NTL.phys.data)
+head(NTL.phys.data)
+summary(NTL.phys.data)
+glimpse(NTL.phys.data)
+dim(NTL.phys.data)
+
+# Date conversion was covered in Module 3. Confirm that the imported column
+# has the expected class before beginning the wrangling workflow.
+class(NTL.phys.data$sampledate)
+
+#Not a date object, let's fix it
+NTL.phys.data$sampledate <- mdy(NTL.phys.data$sampledate)
+```
+
+## Character and Factor Variables
+
+Both **character** and **factor** variables can store categorical information,
+such as lake names. However, they represent that information differently.
+
+A character variable stores text directly. It is a good choice for names,
+labels, comments, and other text that may contain many possible values or may
+change over time.
+
+A factor represents a categorical variable with a defined set of possible
+values called **levels**. Factors are useful when the categories themselves are
+important, such as lake, treatment, habitat type, or season. They can help R:
+
+* summarize observations by category;
+* control the order of categories in tables and graphs; and
+* treat a variable as categorical in statistical models.
+
+When data are imported with current versions of R, text columns are usually
+stored as character variables by default. We should convert a column to a
+factor intentionally when its values represent a meaningful set of categories.
+
+```{r character and factor variables}
+# Lake names were imported as character values
+class(NTL.phys.data$lakename)
+
+# Inspect the distinct lake names
+unique(NTL.phys.data$lakename)
+summary(NTL.phys.data$lakename) #not very meaningful
+
+# Convert lake name from character to factor
+NTL.phys.data$lakename <- factor(NTL.phys.data$lakename)
+NTL.phys.data$lakename <- as.factor(NTL.phys.data$lakename)
+
+
+# Inspect the class and defined categories
+class(NTL.phys.data$lakename)
+levels(NTL.phys.data$lakename)
+nlevels(NTL.phys.data$lakename)
+summary(NTL.phys.data$lakename) #now summary is given us important information
+```
+
+The labels still look like text, but a factor stores a defined set of levels
+and records which level applies to each observation. In contrast, a character
+vector does not maintain a separate list of possible categories.
+
+Factors are **not** required for filtering. Both of the following comparisons
+work because R compares the displayed values:
+
+```{r filtering character and factor variables}
+# Character example
+lake.character <- as.character(NTL.phys.data$lakename)
+sum(lake.character == "Paul Lake")
+
+# Factor example
+sum(NTL.phys.data$lakename == "Paul Lake")
+```
+
+
+
+## Data Wrangling
+
+Data wrangling extends data exploration: it allows you to process data in ways that are useful for you. An important part of data wrangling is creating *tidy datasets*, with the following rules: 
+
+1. Each variable has its own column
+2. Each observation has its own row
+3. Each value has its own cell
+
+What is the best way to wrangle data? There are multiple ways to arrive at a specific outcome in R, and we will illustrate some of those approaches. Your goal should be to write the simplest code that will get you to your desired outcome. However, there is sometimes a trade-off of the opportunity cost to learn a new formulation of code and the time it takes to write complex code that you already know. Remember that the best code is one that is easy to understand for yourself and your collaborators. Remember to comment your code, use informative names for variables and functions, and use reproducible methods to arrive at your output.
+
+## Dplyr Wrangling Functions
+
+`dplyr` is a package in R that includes functions for data manipulation (i.e., data wrangling or data munging). `dplyr` is included in the tidyverse package, so you should already have it installed on your machine. The functions act as verbs for data wrangling processes. For more information, run this line of code:
+
+```{r, results = "hide"}
+vignette("dplyr")
+```
+
+### Filter
+
+Filtering allows us to choose certain rows (observations) in our dataset.
+
+Common comparison and logical operators include `==`, `!=`, `<`, `<=`, `>`,
+`>=`, `&` (and), and `|` (or).
+
+```{r filtering data}
+class(NTL.phys.data$lakeid)
+class(NTL.phys.data$depth)
+
+# matrix filtering
+NTL.phys.data.surface1 <- NTL.phys.data[NTL.phys.data$depth == 0,]
+
+# dplyr filtering
+NTL.phys.data.surface2 <- filter(NTL.phys.data, depth == 0)
+NTL.phys.data.surface3 <- filter(NTL.phys.data, depth < 0.25)
+
+# Did the methods arrive at the same result?
+head(NTL.phys.data.surface1)
+dim(NTL.phys.data.surface1)
+head(NTL.phys.data.surface2)
+dim(NTL.phys.data.surface2)
+head(NTL.phys.data.surface3)
+dim(NTL.phys.data.surface3)
+
+# Choose multiple conditions to filter for a factor variable
+summary(NTL.phys.data$lakename)
+NTL.phys.data.PeterPaul1 <- filter(NTL.phys.data, lakename == "Paul Lake" | lakename == "Peter Lake")
+NTL.phys.data.PeterPaul2 <- filter(NTL.phys.data, lakename != "Central Long Lake" & 
+                                     lakename != "Crampton Lake" & lakename != "East Long Lake" &
+                                     lakename != "Hummingbird Lake" & lakename != "Tuesday Lake" &
+                                     lakename != "Ward Lake" & lakename != "West Long Lake")
+NTL.phys.data.PeterPaul3 <- filter(NTL.phys.data, lakename %in% c("Paul Lake", "Peter Lake"))
+
+# Choose a range of conditions of a numeric or integer variable
+summary(NTL.phys.data$daynum)
+NTL.phys.data.JunethruOctober1 <- filter(NTL.phys.data, daynum > 151 & daynum < 305)
+NTL.phys.data.JunethruOctober2 <- filter(NTL.phys.data, daynum > 151, daynum < 305)
+NTL.phys.data.JunethruOctober3 <- filter(NTL.phys.data, daynum >= 152 & daynum <= 304)
+NTL.phys.data.JunethruOctober4 <- filter(NTL.phys.data, daynum %in% c(152:304))
+
+# Exercise: 
+# filter NTL.phys.data for the year 1999
+# what code do you need to use, based on the class of the variable?
+class(NTL.phys.data$year4)
+
+# Exercise: 
+# filter NTL.phys.data for Tuesday Lake from 1990 through 1999.
+
+
+```
+Question: Why don't we filter using row numbers?
+
+> Answer: 
+
+### Arrange
+
+Arranging allows us to change the order of rows in our dataset. By default, the arrange function will arrange rows in ascending order.
+
+```{r arranging data}
+NTL.phys.data.depth.ascending <- arrange(NTL.phys.data, depth)
+NTL.phys.data.depth.descending <- arrange(NTL.phys.data, desc(depth))
+
+# Exercise: 
+# Arrange NTL.phys.data by temperature, in descending order. 
+# Which dates, lakes, and depths have the highest temperatures?
+
+
+```
+### Select
+
+Selecting allows us to choose certain columns (variables) in our dataset.
+
+```{r selecting columns}
+NTL.phys.data.temps <- select(NTL.phys.data, lakename, sampledate:temperature_C)
+
+```
+### Mutate
+
+Mutating allows us to add new columns that are functions of existing columns. Operations include addition, subtraction, multiplication, division, log, and other functions.
+
+```{r mutating data}
+NTL.phys.data.temps <- mutate(NTL.phys.data.temps, temperature_F = (temperature_C*9/5) + 32)
+
+```
+
+## Pipes
+
+Sometimes we will want to perform multiple functions on a single dataset on our way to creating a processed dataset. We could do this in a series of subsequent functions or create a custom function. However, there is another method to do this that looks cleaner and is easier to read. This method is called a pipe. We designate a pipe with `%>%`. A good way to think about the function of a pipe is with the word "then." 
+
+Let's say we want to take our raw dataset (NTL.phys.data), *then* filter the data for Peter and Paul lakes, *then* select temperature and observation information, and *then* add a column for temperature in Fahrenheit: 
+
+```{r using pipes}
+NTL.phys.data.PeterPaul.processed <- 
+  NTL.phys.data %>%
+  filter(lakename %in% c("Paul Lake", "Peter Lake")) %>%
+  select(lakeid:irradianceDeck) %>%
+  mutate(temperature_F = (temperature_C*9/5) + 32)
+  
+```
+
+Notice that we did not place the dataset name inside the wrangling function but rather at the beginning.
+
+### Saving processed datasets
+
+```{r exporting data}
+write.csv(
+  NTL.phys.data.PeterPaul.processed, 
+  row.names = FALSE,
+  file = here("Data/Processed/NTL-LTER_Lake_ChemistryPhysics_PeterPaul_Processed.csv")
+)
+```
+
+## Closing Discussion
+
+When we wrangle a raw dataset into a processed dataset, we create a code file that contains only the wrangling code. We then save the processed dataset as a new spreadsheet and then create a separate code file to analyze and visualize the dataset. Why do we keep the wrangling code separate from the analysis code?
+
