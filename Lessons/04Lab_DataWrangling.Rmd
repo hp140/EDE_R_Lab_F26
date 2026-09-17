@@ -123,9 +123,9 @@ Note: There is no difference between summarize() and summarise() in `dplyr`. The
 Ex5 <-
   NTL.phys.data.processed %>%
   filter(depth == 0) %>%
+  drop_na(temperature_C) %>%
   group_by(lakename) %>%
   summarize(meantemp = mean(temperature_C))
-
 ```
 
 The argument `.groups = "drop"` is not strictly necessary in this particular workflow. It is mainly good practice in case you perform additional operations on the summary data.
