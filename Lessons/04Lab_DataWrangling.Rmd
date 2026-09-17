@@ -68,17 +68,19 @@ NTL.phys.data.JunethruOctober <- filter(NTL.phys.data, daynum %in% c(152:304))
 # Exercise 1: 
 # filter NTL.phys.data for the year 1999
 # what code do you need to use, based on the class of the variable?
-
+NTL.phys.data.1999 <- filter(NTL.phys.data, year4 == 1999)
 
 # Exercise 2: 
 # filter NTL.phys.data for Tuesday Lake from 1990 through 1999.
-
-
+NTL.phys.data.Tuesday9099 <- 
+  filter(NTL.phys.data, 
+         lakename == "Tuesday Lake", 
+         year4 %in% c(1990:1999))
 ```
 
 Question: Why don't we filter using row numbers?
 
-> Answer: 
+> Answer: It would take a lot of manual searching--if you know what range you're searching for, it would be faster setting up the function
 
 ---
 
@@ -93,21 +95,24 @@ Let's say we want to take our raw dataset (NTL.phys.data), *then* filter the dat
 #Example using pipes to wrangle data: 
 #Add pipes in the correct place below
 NTL.phys.data.processed <- 
-  NTL.phys.data
-  filter(lakename == "Paul Lake" | lakename == "Peter Lake") 
-  select(lakename, sampledate:temperature_C) 
+  NTL.phys.data %>%
+  filter(lakename == "Paul Lake" | lakename == "Peter Lake") %>%
+  select(lakename, sampledate:temperature_C) %>%
   mutate(temperature_F = (temperature_C*9/5) + 32)
 
 #Exercise 3: Using a pipe filter NTL.phys.data for Tuesday Lake from 1990 
-# through 1999 and observations collected during July. 
-
-  
+#through 1999 and observations collected during July. 
+NTL.phys.data.processed2 <- 
+  filter(NTL.phys.data, lakename == "Tuesday Lake", year4 %in% c(1990:1999), month(sampledate) == 07)
 
 #Exercise 4: Using the data from part 3, a pipe, and the summarize() function, 
 # find the mean surface water temperature. 
 # (hint: in this dataset, surface measurements have depth == 0). 
+Ex4 <- 
+  NTL.phys.data.processed2 %>%
+  filter(depth == 0) %>%
+  summarize(meantemp = mean(temperature_C))
 
-  
 ```
 
 Note: There is no difference between summarize() and summarise() in `dplyr`. They are aliases and perform exactly the same operation. Both are maintained and valid.
@@ -115,7 +120,11 @@ Note: There is no difference between summarize() and summarise() in `dplyr`. The
 ```{r}
 #Exercise 5: Using the NTL.phys.data.processed find the mean temperature for 
 #Peter and Paul lake separately.
-
+Ex5 <-
+  NTL.phys.data.processed %>%
+  filter(depth == 0) %>%
+  group_by(lakename) %>%
+  summarize(meantemp = mean(temperature_C))
 
 ```
 
