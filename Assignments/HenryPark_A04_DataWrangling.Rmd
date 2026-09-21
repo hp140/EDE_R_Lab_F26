@@ -91,7 +91,6 @@ NewPM2025New <- select(EPAPM2025, Date, Daily.AQI.Value, Local.Site.Name, AQS.Pa
 #5
 NewPM2024New$AQS.Parameter.Description <- "PM2.5"
 NewPM2025New$AQS.Parameter.Description <- "PM2.5"
-
 ```
 
 ### Question 6
@@ -100,8 +99,29 @@ NewPM2025New$AQS.Parameter.Description <- "PM2.5"
 
 ```{r question 6}
 #6 
+write.csv(
+  NewO32024,
+  row.names = FALSE,
+  file = here("Data/Processed/EPAair_O3_NC2024_processed.csv")
+)
 
+write.csv(
+  NewO32025,
+  row.names = FALSE,
+  file = here("Data/Processed/EPAair_O3_NC2025_processed.csv")
+)
 
+write.csv(
+  NewPM2024New,
+  row.names = FALSE,
+  file = here("Data/Processed/EPAair_PM25_NC2024_processed.csv")
+)
+
+write.csv(
+  NewPM2025New,
+  row.names = FALSE,
+  file = here("Data/Processed/EPAair_PM25_NC2025_processed.csv")
+)
 ```
 
 
@@ -114,8 +134,7 @@ identical first.
 
 ```{r question 7}
 #7 
-
-
+EPACombined <- bind_rows(NewO32024, NewO32025, NewPM2024New, NewPM2025New)
 ```
 
 ### Question 8
@@ -142,8 +161,21 @@ following conditions:
 
 ```{r question 8}
 #8 
-
-
+DailySiteLevel <-
+  EPACombined %>%
+  group_by(Date, Local.Site.Name, AQS.Parameter.Description, County) %>%
+  filter(Local.Site.Name %in% c("Linville Falls","Durham Armory","Leggett",
+                                "Hattie Avenue","Clemmons Middle",
+                                "Mendenhall School","Frying Pan Mountain",
+                                "West Johnston Co.","Garinger High School",
+                                "Castle Hayne","Pitt Agri. Center",
+                                "Bryson City","Millbrook School")) %>%
+  summarize(AQImean = mean(Daily.AQI.Value),
+            Latmean = mean(Site.Latitude),
+            Longmean = mean(Site.Longitude),
+            .groups = "drop") %>%
+  mutate(Month = month(DailySiteLevel$Date),
+         Year = year(DailySiteLevel$Date))
 ```
 
 ### Questions 9–10
