@@ -1,0 +1,182 @@
+---
+title: "Assignment 4: Data Wrangling"
+author: "Student Name"
+output: pdf_document
+geometry: margin=2.54cm
+---
+
+## OVERVIEW
+
+In this assignment, you will build a reproducible workflow that cleans four EPA
+air-quality files, combines them, reshapes the result, and produces grouped
+summaries. Date conversion is a brief review from Module 3; the emphasis is on
+data wrangling.
+
+## Directions
+
+1. Rename this file `<FirstLast>_A04_DataWrangling.Rmd` (replacing `<FirstLast>` with your first and last name).
+2. Change "Student Name" on line 3 (above) with your name.
+3. Work through the steps, **creating code and output** that fulfill each instruction.
+4. Be sure to **answer the questions** in this assignment document.
+5. When you have completed the assignment, **Knit** the text and code into a single PDF file.
+6. Ensure that code in code chunks does not extend off the page in the PDF.
+
+## Set up your session 
+
+### Questions 1–2
+
+1a. Load the `tidyverse` and `here` packages into your session.
+
+1b. Check your working directory.
+
+1c. Read all four raw files associated with the EPA Air dataset. See the README
+file for information about the variables and measurements.
+
+2. Add the appropriate code to reveal the dimensions of the four datasets. 
+
+```{r setup questions 1-2, message = FALSE}
+#1a 
+
+
+#1b 
+
+
+#1c 
+
+
+#2 
+
+
+```
+
+> All four datasets should have the same number of columns (PM2.5 has one extra column),
+but unique record counts (rows). Do your datasets follow this pattern?
+
+## Wrangle individual datasets to create processed files.
+
+### Questions 3–5
+
+3. Change the Date columns to be date objects.
+
+4. Select the following columns: DDate, Daily.AQI.Value, Local.Site.Name, 
+AQS.Parameter.Description, County, Site.Latitude, Site.Longitude
+
+5. For the PM2.5 datasets, fill all cells in AQS.Parameter.Description with "PM2.5" 
+(all cells in this column should be identical).
+
+```{r questions 3 thru 5}
+#3
+
+
+#4
+
+
+#5
+
+
+```
+
+### Question 6
+
+6. Save all four processed datasets in the Processed folder. Use the same file names as the raw files but replace "raw" with "processed".
+
+```{r question 6}
+#6 
+
+
+```
+
+
+## Combine datasets
+
+### Question 7
+
+7. Stack the four datasets with `bind_rows()`. Check that their column names are
+identical first.
+
+```{r question 7}
+#7 
+
+
+```
+
+### Question 8
+
+8. Use one pipeline (`%>%`) to create a daily site-level dataset that meets the
+following conditions:
+
+  * Include only sites that the four data frames have in common:  
+    
+  "Linville Falls", "Durham Armory", "Leggett", "Hattie Avenue",  
+  "Clemmons Middle", "Mendenhall School", "Frying Pan Mountain", 
+  "West Johnston Co.", "Garinger High School", "Castle Hayne", 
+  "Pitt Agri. Center", "Bryson City", "Millbrook School" 
+  
+  (the function `intersect` can figure out common factor levels - but it will include sites with missing site information, which you don't want...) 
+
+  * Some sites have multiple measurements per day. Group by date, site name,
+  AQS parameter, and county, then calculate the mean AQI value, latitude, and
+  longitude. Handle missing values explicitly in each mean.
+  
+  * Add numeric `Month` and `Year` columns from `Date`. Check if results are integers.
+  
+  * Hint: the dimensions of this dataset should be 15,012 × 9.
+
+```{r question 8}
+#8 
+
+
+```
+
+### Questions 9–10
+
+9. Use `pivot_wider()` so that ozone and PM2.5 AQI values occupy separate
+columns. Each location-date combination should occupy one row.
+
+10. Call up the dimensions of your new tidy dataset.
+
+```{r questions 9-10}
+#9
+
+
+#10
+
+
+```
+
+### Question 11
+
+11. Save your processed dataset with the following file name: "EPAair_O3_PM25_NC2425_Processed.csv"
+
+```{r question 11}
+#11
+
+
+```
+
+## Generate summary tables
+
+### Questions 12–13
+
+12. Create a monthly summary data frame grouped by site, month, and year.
+Calculate mean ozone and PM2.5 AQI for each group, handling missing values
+explicitly. Then use `drop_na()` to remove rows only when mean **ozone** is
+missing. Mean PM2.5 may remain missing.
+
+13. Call up the dimensions of the summary dataset.
+
+```{r questions 12 and 13}
+#12
+
+
+#13
+
+
+```
+
+### Question 14
+
+14. Why is `drop_na(mean_ozone)` more appropriate here than `na.omit()`? Test
+both approaches and compare the dimensions of the resulting summary data frames.
+
+> Answer: 
