@@ -1,6 +1,6 @@
 ---
 title: "Assignment 4: Data Wrangling"
-author: "Student Name"
+author: "Henry Park"
 output: pdf_document
 geometry: margin=2.54cm
 ---
@@ -36,10 +36,11 @@ file for information about the variables and measurements.
 
 ```{r setup questions 1-2, message = FALSE}
 #1a 
-
+library(tidyverse);
+library(here)
 
 #1b 
-
+getwd()
 
 #1c 
 
