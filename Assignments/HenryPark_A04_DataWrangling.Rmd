@@ -35,6 +35,8 @@ file for information about the variables and measurements.
 2. Add the appropriate code to reveal the dimensions of the four datasets. 
 
 ```{r setup questions 1-2, message = FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
 #1a 
 library(tidyverse);
 library(here)
@@ -43,11 +45,16 @@ library(here)
 getwd()
 
 #1c 
-
+EPAO32024 <- read.csv(file=here('Data/Raw/EPAair_O3_NC2024_raw.csv'))
+EPAO32025 <- read.csv(file=here('Data/Raw/EPAair_O3_NC2025_raw.csv'))
+EPAPM2024 <- read.csv(file=here('Data/Raw/EPAair_PM25_NC2024_raw.csv'))
+EPAPM2025 <- read.csv(file=here('Data/Raw/EPAair_PM25_NC2025_raw.csv'))
 
 #2 
-
-
+dim(EPAO32024);
+dim(EPAO32025);
+dim(EPAPM2024);
+dim(EPAPM2025)
 ```
 
 > All four datasets should have the same number of columns (PM2.5 has one extra column),
@@ -67,13 +74,23 @@ AQS.Parameter.Description, County, Site.Latitude, Site.Longitude
 
 ```{r questions 3 thru 5}
 #3
-
+EPAO32024$Date <- mdy(EPAO32024$Date);
+EPAO32025$Date <- mdy(EPAO32025$Date);
+EPAPM2024$Date <- mdy(EPAPM2024$Date);
+EPAPM2025$Date <- mdy(EPAPM2025$Date)
 
 #4
+NewO32024 <- select(EPAO32024, Date, Daily.AQI.Value, Local.Site.Name, AQS.Parameter.Description, County, Site.Latitude, Site.Longitude)
 
+NewO32025 <- select(EPAO32025, Date, Daily.AQI.Value, Local.Site.Name, AQS.Parameter.Description, County, Site.Latitude, Site.Longitude)
+
+NewPM2024New <- select(EPAPM2024, Date, Daily.AQI.Value, Local.Site.Name, AQS.Parameter.Description, County, Site.Latitude, Site.Longitude)
+
+NewPM2025New <- select(EPAPM2025, Date, Daily.AQI.Value, Local.Site.Name, AQS.Parameter.Description, County, Site.Latitude, Site.Longitude)
 
 #5
-
+NewPM2024New$AQS.Parameter.Description <- "PM2.5"
+NewPM2025New$AQS.Parameter.Description <- "PM2.5"
 
 ```
 
