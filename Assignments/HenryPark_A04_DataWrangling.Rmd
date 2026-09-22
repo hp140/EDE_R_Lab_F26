@@ -174,8 +174,11 @@ DailySiteLevel <-
             Latmean = mean(Site.Latitude),
             Longmean = mean(Site.Longitude),
             .groups = "drop") %>%
-  mutate(Month = month(DailySiteLevel$Date),
-         Year = year(DailySiteLevel$Date))
+  mutate(Month = month(Date),
+         Year = year(Date))
+
+class(DailySiteLevel$Month)
+class(DailySiteLevel$Year)
 ```
 
 ### Questions 9–10
@@ -187,10 +190,15 @@ columns. Each location-date combination should occupy one row.
 
 ```{r questions 9-10}
 #9
-
+DailySiteLevel.wide <- 
+  DailySiteLevel %>%
+  pivot_wider(
+    names_from = AQS.Parameter.Description,
+    values_from = AQS.Parameter.Description
+    )
 
 #10
-
+dim(DailySiteLevel.wide)
 
 ```
 
@@ -200,7 +208,11 @@ columns. Each location-date combination should occupy one row.
 
 ```{r question 11}
 #11
-
+write.csv(
+  DailySiteLevel.wide,
+  row.names = FALSE,
+  file = here("Data/Processed/EPAair_O3_PM25_NC2425_Processed.csv")
+)
 
 ```
 
