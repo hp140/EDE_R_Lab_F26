@@ -174,6 +174,7 @@ DailySiteLevel <-
             Latmean = mean(Site.Latitude),
             Longmean = mean(Site.Longitude),
             .groups = "drop") %>%
+  filter(!is.na(AQImean) & !is.na(Latmean) & !is.na(Longmean)) %>%
   mutate(Month = month(Date),
          Year = year(Date))
 
@@ -194,7 +195,7 @@ DailySiteLevel.wide <-
   DailySiteLevel %>%
   pivot_wider(
     names_from = AQS.Parameter.Description,
-    values_from = AQS.Parameter.Description
+    values_from = AQImean
     )
 
 #10
@@ -229,10 +230,16 @@ missing. Mean PM2.5 may remain missing.
 
 ```{r questions 12 and 13}
 #12
-
-
+MonthlySiteLevel <-
+  DailySiteLevel.wide %>%
+  group_by(Local.Site.Name, Month, Year) %>%
+  summarize(ozone_mean = mean(Ozone),
+            pm_mean = mean(PM2.5),
+            .groups = "drop") %>%
+  drop_na(ozone_mean)
+  
 #13
-
+dim(MonthlySiteLevel)
 
 ```
 
@@ -241,4 +248,4 @@ missing. Mean PM2.5 may remain missing.
 14. Why is `drop_na(mean_ozone)` more appropriate here than `na.omit()`? Test
 both approaches and compare the dimensions of the resulting summary data frames.
 
-> Answer: 
+> Answer: When I ran the code chunk twice with the two different functions, I noticed that running it with na.omit deleted every row which contained a 'NA' value, whether it came from ozone_mean or pm_mean. Because the only data we were looking to filter out for this dataset was any 'NA' values only when ozone_mean was missing a value, it seems like drop_na() allows us to do more specific changes to our datasets. 
