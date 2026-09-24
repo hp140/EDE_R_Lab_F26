@@ -15,7 +15,7 @@ library(tidyverse)
 library(here)
 library(RColorBrewer)
 library(ggthemes)
-
+library(lubridate)
 ```
 
 ## Import datasets
@@ -36,7 +36,6 @@ Neonics <- Neonics <- read.table(
   quote = "\"",   
   comment.char = ""
   )
-
 ```
 
 ---
