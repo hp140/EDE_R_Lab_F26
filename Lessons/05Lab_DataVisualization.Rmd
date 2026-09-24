@@ -23,11 +23,11 @@ library(lubridate)
 ```{r import-data, message = FALSE, warning = FALSE}
 PeterPaul.chem.nutrients <- read.csv(
   here("Data/Processed_KEY/NTL-LTER_Lake_Chemistry_Nutrients_PeterPaul_Processed.csv")
-  ) %>% ymd(sampledate)
+  ) %>% mutate(sampledate = ymd(sampledate))
 
 EPAair <- read.csv(
   here("Data/Processed_KEY/EPAair_O3_PM25_NC2425_Processed.csv")
-  ) %>% ymd(Date)
+  ) %>% mutate(Date = ymd(Date))
 
 Neonics <- Neonics <- read.table(
   here("Data/Raw/ECOTOX_Neonicotinoids_Insects_raw.txt"),
@@ -249,7 +249,16 @@ Use `PeterPaul.chem.nutrients` to plot surface-water temperature by day of year.
 
 ```{r exercise-1, fig.height = 4.5, fig.width = 7, warning = FALSE}
 # Build the plot here.
+temp_by_day <-
+  PeterPaul.chem.nutrients %>%
+  filter(depth == 0,
+         !is.na(temperature_C)) %>%
+  ggplot(aes(x = daynum, y = temperature_C, color = year4)) +
+  geom_point(alpha = 0.5) +
+  facet_wrap(vars(lakename), nrow = 2) +
+  theme_minimal()
 
+temp_by_day
 ```
 
 **Interpretation**
