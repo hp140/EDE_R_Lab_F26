@@ -1,0 +1,337 @@
+---
+title: "M5: Data Visualization - Part 2 — Refining and Communicating Visualizations"
+subtitle: "Environmental Data Exploration"
+author: "John Fay & Luana Lima"
+output: pdf_document
+geometry: margin=2.54cm
+editor_options:
+  chunk_output_type: console
+---
+
+## Learning objectives
+
+By the end of this lesson, you will be able to:
+
+1. Turn an exploratory figure into an explanatory figure for a defined audience.
+2. Use scales, color, facets, text, and reference lines intentionally.
+3. Apply accessibility and reproducibility principles.
+4. Export figures at an appropriate size and format.
+
+## 1. Set up
+
+```{r setup, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(lubridate)
+library(here)
+library(patchwork)
+
+EPAair <- read.csv(
+  here("Data/Processed_KEY/EPAair_O3_PM25_NC2425_Processed.csv"),
+) %>% mutate(Date = ymd(Date))
+
+PeterPaul <- read.csv(
+  here("Data/Processed_KEY/NTL-LTER_Lake_Chemistry_Nutrients_PeterPaul_Processed.csv")
+) %>% mutate(sampledate = ymd(sampledate))
+```
+
+## 2. Exploratory versus explanatory plots
+
+An exploratory plot helps the analyst discover patterns. An explanatory plot helps a particular audience see one important pattern. Moving between them requires decisions about emphasis—not simply adding decoration.
+
+```{r exploratory}
+#If you want to save a plot object use 'variable_name' <- 
+ozone_base <- ggplot(EPAair, aes(Date, AQI_Ozone)) +
+  geom_point(alpha = 0.35, size = 0.8)
+
+#Note that plot is not showing after you run the code
+#to get the plot you need to call for it as below
+ozone_base
+```
+
+Before editing, write a one-sentence takeaway. Every design choice should help readers verify that takeaway or understand its limits.
+
+## 3. Labels provide context
+
+A figure should be understandable after it is separated from the code that produced it. Include a descriptive title, measurement units, an informative legend title, and a caption naming the source or noting an important limitation.
+
+```{r labels}
+ozone_labeled <- ozone_base +
+  labs(
+    title = "Daily ozone AQI varies across North Carolina monitoring sites",
+    subtitle = "Observations from 2024–2025; gaps represent unavailable measurements",
+    x = NULL,
+    y = expression("Ozone (O"[3]*") AQI"),
+    caption = "Source: U.S. EPA air-quality data"
+  )
+
+ozone_labeled
+```
+
+Avoid titles such as “Ozone vs. Date.” A title can identify the comparison; a takeaway title can state the main result when the evidence supports it.
+
+## 4. Themes create hierarchy
+
+Themes control non-data components. Start with a restrained complete theme, then change only what improves hierarchy and readability.
+
+```{r theme}
+course_theme <- theme_minimal(base_size = 12) +
+  theme(
+    plot.title.position = "plot",
+    plot.title = element_text(face = "bold"),
+    panel.grid.minor = element_blank(),
+    legend.position = "bottom",
+    axis.text = element_text(color = "gray20")
+  )
+
+#Note the syntax here, we create a them and them we apply to an existing plot
+ozone_labeled + course_theme
+```
+
+Use `theme_set(course_theme)` when a report needs consistent formatting. Remember: themes change appearance; scales change how data values are represented.
+
+## 5. Scales and reference points
+
+Breaks and labels should match the precision of the data and the audience. Reference lines are useful only when their meaning is explained.
+
+```{r scales-reference}
+ozone_explanatory <- ggplot(EPAair, aes(Date, AQI_Ozone)) +
+  geom_hline(yintercept = c(50, 100),
+             linewidth = 0.4, linetype = "dashed", color = "gray45") +
+  geom_point(alpha = 0.35, size = 0.8, color = "#2C7FB8") +
+  annotate("text", x = as.Date("2025-12-15"), y = 50,
+           label = "AQI 50", vjust = -0.4, hjust = 1, size = 3) +
+  annotate("text", x = as.Date("2025-12-15"), y = 100,
+           label = "AQI 100", vjust = -0.4, hjust = 1, size = 3) +
+  scale_x_date(date_breaks = "4 months", date_labels = "%b\n%Y",
+               expand = expansion(mult = c(0.01, 0.03))) +
+  labs(
+    title = "Daily ozone AQI at North Carolina monitoring sites",
+    subtitle = "Dashed lines provide reference values for interpretation",
+    x = NULL, y = expression("Ozone (O"[3]*") AQI"),
+    caption = "Source: U.S. EPA data supplied with the course"
+  ) +
+  course_theme
+
+ozone_explanatory
+```
+
+Confirm the definition and source of any regulatory or scientific threshold before using it. A visually prominent line can imply authority even when none exists.
+
+Make sure you understand the new geom layers we used here and its arguments:
+`annotate()`
+`scale_x_date()`
+
+
+## 6. Color is a scale, not decoration
+
+Match palette type to variable type:
+
+- **Qualitative:** distinct, unordered categories.
+- **Sequential:** low-to-high numeric or ordered values.
+- **Diverging:** meaningful values on both sides of a defensible midpoint.
+
+### Color palettes
+
+Color palettes are an effective way to communicate additional aspects of our data, often illustrating a third categorical or continuous variable in addition to the variables on the x and y axes. A few rules for choosing colors: 
+
+* Consider if your plot needs to be viewed in black and white. If so, choose a sequential palette with varying color intensity.
+* Choose a palette that is color-blind friendly
+* Maximize contrast (e.g., no pale colors on a white background)
+* Diverging color palettes should be used for diverging values (e.g., warm-to-cool works well for values on a scale encompassing negative and positive values)
+
+Does your color palette communicate additional and necessary information? If the answer is no, then you might consider removing it and going with a single color. Common instances of superfluous or redundant color palettes include: 
+
+* Color that duplicates an axis
+* Color that distinguishes categories when labels already exist (exception: if category colors repeat throughout a series of interrelated visualizations and help the reader build a frame of reference across a report)
+* Color that reduces the conciseness of a plot
+
+Perception is key! Choose palettes that are visually pleasing and will communicate what you are hoping your audience to perceive.
+
+RColorBrewer (package)
+
+* http://colorbrewer2.org
+* https://moderndata.plot.ly/create-colorful-graphs-in-r-with-rcolorbrewer-and-plotly/
+
+viridis and viridisLite (packages)
+
+* https://cran.r-project.org/web/packages/viridis/vignettes/intro-to-viridis.html
+* https://ggplot2.tidyverse.org/reference/scale_viridis.html
+
+Viridis palettes provide perceptually ordered options that are generally robust to common color-vision deficiencies and grayscale reproduction.
+
+```{r color-continuous}
+nutrient_plot <- ggplot(PeterPaul, aes(tp_ug, tn_ug,
+                                      color = depth, shape = lakename)) +
+  geom_point(alpha = 0.75, size = 2.2) +
+  scale_color_viridis_c(option = "cividis", direction = -1) +
+  labs(
+    title = "Nitrogen and phosphorus concentrations vary with depth",
+    x = expression("Total phosphorus"~(mu*g/L)),
+    y = expression("Total nitrogen"~(mu*g/L)),
+    color = "Depth",
+    shape = "Lake"
+  ) +
+  course_theme
+
+nutrient_plot
+```
+
+Note: `ggplot2`— which loads with tidyverse — includes viridis scale functions. Therefore, you can use these functions without calling `library(viridis)`
+
+`scale_color_viridis_c()`
+`scale_fill_viridis_c()`
+`scale_color_viridis_d()`
+`scale_fill_viridis_d()`
+
+The suffix indicates the variable type:
+`_c()` = continuous variable
+`_d()` = discrete or categorical variable
+
+Shape (`shape=lakename`) provides a redundant cue for the two lakes, so the distinction does not depend on color alone. 
+
+## 7. Facet or Color-code
+
+Use a shared aesthetic when direct comparison in one panel is easy. Use facets when overlap is high or each subgroup needs its own visual space. Keep shared scales when magnitudes must be compared; use free scales only when comparing shapes is more important, and state that choice.
+
+```{r facets}
+ggplot(EPAair, aes(Date, AQI_PM2.5)) +
+  geom_line(linewidth = 0.3, color = "gray45", na.rm = TRUE) +
+  facet_wrap(vars(Local.Site.Name), ncol = 2) +
+  labs(title = "PM2.5 AQI through time by monitoring site",
+       x = NULL, y = expression(PM[2.5]~AQI)) +
+  course_theme +
+  theme(legend.position = "none")
+```
+
+Do not use `na.rm = TRUE` until you have already checked and documented why values are missing. Here it prevents repeated rendering warnings; it does not solve the missing-data problem.
+
+## 8. Annotation should direct attention
+
+Use text to explain an event, threshold, or unusual value. Prefer direct labels when they reduce legend lookup. Avoid labeling every point.
+
+```{r annotate-highest}
+highest_ozone <- EPAair %>%
+  filter(!is.na(AQI_Ozone)) %>%
+  slice_max(AQI_Ozone, n = 1, with_ties = FALSE)
+
+#n= 1 will return only max valor of column AQI_Ozone
+#with_ties = FALSE tells slice_max() or slice_min() to return only the requested 
+#number of rows, even when several rows share the same value.
+
+ggplot(EPAair, aes(Date, AQI_Ozone)) +
+  geom_point(alpha = 0.25, color = "gray45") +
+  geom_point(data = highest_ozone, color = "#D55E00", size = 2.5) +
+  geom_label(data = highest_ozone,
+             aes(label = paste(Local.Site.Name, format(Date, "%b %d, %Y"))),
+             nudge_y = 8, label.size = 0, size = 3) +
+  labs(title = "The highest recorded ozone AQI occurred at one site-date",
+       x = NULL, y = expression("Ozone (O"[3]*") AQI")) +
+  course_theme
+```
+
+An extreme point is not automatically an error. Verify it against the data source and field context before excluding or emphasizing it.
+
+## 9. Uncertainty, summaries, and sample size
+
+When plotting means or other estimates, state what an interval represents: standard deviation, standard error, confidence interval, or something else. These quantities answer different questions. Whenever possible, show raw observations or sample sizes alongside summaries.
+
+```{r summary-uncertainty}
+site_summary <- EPAair %>%
+  filter(!is.na(AQI_PM2.5)) %>%
+  group_by(Local.Site.Name) %>%
+  summarise(
+    n = n(),
+    mean_pm = mean(AQI_PM2.5),
+    se_pm = sd(AQI_PM2.5) / sqrt(n),
+    .groups = "drop"
+  ) %>%
+  mutate(Local.Site.Name = fct_reorder(Local.Site.Name, mean_pm))
+
+ggplot(site_summary, aes(mean_pm, Local.Site.Name)) +
+  geom_errorbar(aes(xmin = mean_pm - 1.96 * se_pm,
+                     xmax = mean_pm + 1.96 * se_pm), height = 0.15) +
+  geom_point(size = 2, color = "#2C7FB8") +
+  geom_text(aes(label = paste0("n = ", n)), nudge_x = 2,
+            hjust = 0, size = 3) +
+  labs(title = "Mean PM2.5 AQI and approximate 95% intervals by site",
+       subtitle = "Intervals use 1.96 × standard error and do not account for temporal dependence",
+       x = expression("Mean PM"[2.5]~"AQI"), y = NULL) +
+  coord_cartesian(clip = "off") +
+  course_theme +
+  theme(plot.margin = margin(5.5, 45, 5.5, 5.5))
+```
+
+The calculation above is pedagogical. Daily measurements may be temporally dependent, so a simple standard-error interval may overstate precision. Visualization cannot repair an inappropriate statistical model.
+
+## 10. Multiple plots on a page
+
+In situations where facets don't fill our needs to place multiple plots on a page, we can use the package `cowplot` to arrange plots. The `plot_grid` function is extremely flexible in its ability to arrange plots in specific configurations. A useful guide can be found here: https://cran.r-project.org/web/packages/cowplot/vignettes/introduction.html.
+
+A useful guide for aligning plots by axis can be found here: https://wilkelab.org/cowplot/articles/aligning_plots.html
+
+```{r, fig.height = 7, fig.width = 6}
+#install.packages("cowplot")
+library(cowplot)
+plot_grid(nutrient_plot, ozone_explanatory, nrow = 2, align = 'h', rel_heights = c(1, 1))
+
+```
+
+Another way to stack plots is with `pachtwork`. Patchwork is usually simpler than cowplot for arranging existing ggplot objects and adding common title. Its layout syntax is intuitive.
+| places plots beside one another.
+/ stacks plots vertically.
+Parentheses group layouts.
+plot_annotation() adds a shared title and panel labels.
+
+```{r combine, fig.height=6, fig.width=8}
+(nutrient_plot | ozone_explanatory) +
+  plot_annotation(
+    title = "Examples of relationship and time-series graphics"
+  )
+
+```
+
+Notice that titles are overlapping. You need to go back to code when yoy created the plot and add stringr::str_wrap() to title to fix it.
+
+Cowplot remains useful when you need precise plot alignment, detailed control over relative widths and heights, manual placement of labels or other drawing elements and more customized layouts.
+
+Every panel should remain legible at its final printed or projected size.
+
+## 11. Export for the destination
+
+The `ggsave` function allows you to save plots in jpg, png, eps, pdf, tiff, and other formats. The following information can be supplied: 
+
+* filename and relative path, with file extension and in quotes (required)
+* plot object (required)
+* width, height, units 
+* resolution (dpi)
+
+```{r export, eval=FALSE}
+dir.create(here("Output"), showWarnings = FALSE)
+
+ggsave(
+  filename = here("Output/ozone_AQI.png"),
+  plot = ozone_explanatory,
+  width = 7, height = 4.5, units = "in", dpi = 300,
+  bg = "white"
+)
+
+ggsave(
+  filename = here("Output", "ozone_AQI.pdf"),
+  plot = ozone_explanatory,
+  width = 7, height = 4.5, units = "in"
+)
+```
+
+- Use PNG for slides, web pages, and plots with many points.
+- Use PDF or SVG for scalable vector output when supported by the destination.
+- Use sufficient dimensions and font size; increasing DPI alone does not fix a cramped design.
+- Use informative filenames and keep the code that generated every submitted figure.
+
+## 12. Final visualization checklist
+
+- **Question:** Is the intended comparison clear?
+- **Evidence:** Are raw data, sample size, aggregation, and uncertainty well represented ?
+- **Encoding:** Do position, color, shape, and facets match the variable types?
+- **Context:** Are title, units, legend, source, thresholds, and limitations present where needed?
+- **Accessibility:** Does the plot work without color alone, at final size, and in grayscale when required?
+- **Reproducibility:** Can the figure be regenerated from code and saved to a project-relative path?

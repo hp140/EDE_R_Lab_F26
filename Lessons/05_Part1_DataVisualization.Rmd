@@ -1,0 +1,418 @@
+---
+title: "M5: Data Visualization - Part 1 — Choosing and Building Effective Visualizations"
+subtitle: "Environmental Data Exploration"
+author: "John Fay & Luana Lima"
+output: pdf_document
+geometry: margin=2.54cm
+editor_options:
+  chunk_output_type: console
+  markdown: 
+    wrap: 72
+---
+
+## Learning objectives
+
+By the end of this lesson, you will be able to:
+
+1.  Match a research question and variable types to an appropriate plot.
+2.  Build plots by combining data, aesthetic mappings, geoms, and scales
+    in `ggplot2`.
+3.  Explain what common plots reveal—and what they can hide.
+4.  Identify misleading choices involving axes, aggregation,
+    overplotting, and missing data.
+
+## 1. Begin with the question
+
+A plot is an argument about which patterns deserve attention. Before
+choosing a geom, state the question:
+
+| Analytical purpose | Typical question | Useful starting point |
+|------------------------|------------------------|------------------------|
+| Distribution | What values are common, unusual, or skewed? | histogram, density plot, dot plot |
+| Comparison | How does a numeric variable differ among groups? | boxplot plus points, violin plus points |
+| Amount/count | How many observations or how much is in each category? | ordered bar chart |
+| Relationship | Do two numeric variables vary together? | scatterplot |
+| Change over time | How does a measured quantity change through ordered time? | line and/or point plot |
+
+The table gives starting points, not automatic answers. Sample size,
+repeated measurements, uncertainty, and audience can change the best
+choice.
+
+### Additional resource: From Data to Viz
+
+A good resource for data visualization is [Data to
+Viz](https://www.data-to-viz.com/), it provides a decision tree for
+selecting a visualization based on the number and types of variables in
+a dataset. It also includes examples, R code, and discussions of common
+visualization problems.
+
+Use the decision tree as a source of possibilities—not as an automatic
+rule. The most appropriate visualization also depends on your research
+question, sample size, data-collection design, and audience.
+
+As you explore the site, select one plot you recognize and one that is
+new to you. For each, identify: \* The type of variables it displays \*
+The analytical question it helps answer \* One limitation or situation
+in which it might be misleading
+
+## 2. Set up the analysis
+
+```{r setup, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(lubridate)
+library(here)
+
+# Import processed EPA air data set
+EPAair <- read.csv(
+  here("Data/Processed_KEY/EPAair_O3_PM25_NC2425_Processed.csv")
+) 
+
+#Fix date
+EPAair$Date <- ymd(EPAair$Date)
+
+#Import processed Peter Lake and Paul Lake data set and immediatly converting 
+#date columns with the use of pipe
+
+PeterPaul <- 
+  read.csv(here("Data/Processed_KEY/NTL-LTER_Lake_Chemistry_Nutrients_PeterPaul_Processed.csv")) %>%
+  mutate(sampledate = ymd(sampledate))
+
+PeterPaul_long <- 
+  read.csv(here("Data/Processed_KEY/NTL-LTER_Lake_Nutrients_PeterPaulLong_Processed.csv")) %>%
+  mutate(sampledate = ymd(sampledate))
+```
+
+Always inspect the structure and the missing values before plotting.
+Here, we will use summarise() again. Recall that summarise() reduces
+many observations into one or more summary values. In this example, it
+returns one row containing the number of missing values in each selected
+variable.
+
+```{r inspect}
+glimpse(EPAair)
+
+#Use summary() to count NAs
+summary(EPAair$AQI_Ozone)
+summary(EPAair$AQI_PM2.5)
+
+#Or with the use of pipes
+EPAair %>%
+  summarise(
+    AQI_Ozone = sum(is.na(AQI_Ozone)),
+    AQI_PM2.5 = sum(is.na(AQI_PM2.5))
+  )
+
+#Advanced code when you need to perform summary for multiple columns
+EPAair %>%
+  summarise(
+    across(
+      #first argument of across selects the columns
+      c(AQI_Ozone, AQI_PM2.5),
+      #second argument provides calculation to be applied to each column
+      ~ sum(is.na(.x)) #Inside across(), .x means “the column currently being processed.”
+    )
+  )
+
+```
+
+`ggplot2` generally omits rows that are missing a required aesthetic and
+reports a warning. That omission may change the population represented
+by a plot. Investigate it; do not automatically suppress the warning.
+
+## 3. The grammar of graphics
+
+A `ggplot2` figure is built in layers:
+
+```{r first-plot}
+ggplot(data = EPAair, 
+       mapping = aes(x = Date, y = AQI_Ozone)) +
+  geom_point()
+```
+
+- **Data**: the observations to visualize, only takes data frames.
+- **Aesthetics (`aes`)**: variables mapped to position, color, fill,
+  shape, or size.
+- **Geom**: how observations are drawn.
+- **Scale**: how data values become positions, colors, labels, or sizes.
+- **Facet**: repeated panels for subgroup comparison.
+- **Coordinate system**: how positions are displayed.
+- **Theme**: non-data ink, such as fonts, grid lines, and legend
+  placement.
+- **Labs**: add labels and titles to plot.
+
+### Commonly used layers for plotting in ggplot:
+
+- geom_bar
+- geom_histogram
+- geom_freqpoly
+- geom_boxplot
+- geom_violin
+- geom_dotplot
+- geom_density_ridges
+- geom_point
+- geom_errorbar
+- geom_smooth
+- geom_line
+- geom_area
+- geom_abline (plus geom_hline and geom_vline)
+- geom_text
+
+### Commonly used aesthetic types that can be manipulated in ggplot:
+
+- color
+- fill
+- shape
+- size
+- transparency
+
+Place something inside aes() when you want a visual property—such as
+color, shape, or size—to vary according to a column in the dataset.
+Place something outside aes() when you want every observation to have
+the same appearance.
+
+```{r map-versus-set}
+# One fixed color
+ggplot(
+  EPAair, 
+  aes(x=Date, 
+      y=AQI_Ozone)
+  ) +
+  geom_point(color = "blue") #here all points will have the same color
+
+# Color represents a variable and therefore creates a legend
+ggplot(EPAair, 
+       aes(x = Date, 
+           y = AQI_Ozone, 
+           color = Local.Site.Name)
+       ) +
+  geom_point()  #here points will be color based on Local.Site.Name
+```
+
+Modern R refers to data frame and use a pipe symbol to pass EPAair to
+the first argument of ggplot().
+
+```{r eval=FALSE, include=FALSE}
+
+EPAair %>% ggplot(...)
+
+#is the same as
+
+ggplot(data = EPAair, ...)
+
+```
+
+The pipe is helpful when the data need to be modified before plotting.
+You may need to filter the data, convert a column into a factor or
+reorder columns before plotting.
+
+For example: 1. Start with EPAair. 2. Remove missing site names. 3.
+Reorder the site factor. 4. Pass the resulting data to ggplot().
+
+## 4. One numeric variable: reveal the distribution
+
+Use a histogram to examine range, skew, gaps, modes, and possible
+unusual values. The bin width is an analytical choice: too wide hides
+structure; too narrow emphasizes noise.
+
+```{r histogram}
+ggplot(
+  EPAair, 
+  aes(x = AQI_PM2.5)
+  ) +
+  geom_histogram(
+    binwidth = 2,
+    boundary = 0,
+    fill = "steelblue",
+    color = "white"
+  ) +
+  labs(
+    x = expression(PM[2.5]~AQI), #see notes below on expression()
+    y = "Number of observations"
+  )
+```
+
+`expression()` formats mathematical notation in plot labels. Use it to add subscripts, superscripts, Greek letters, and units. Text inside quotation marks is displayed normally, while symbols and formatting instructions outside quotation marks are interpreted as math.
+
+`~` adds a space between elements
+
+`*` joins elements without adding a space
+
+Try at least two reasonable bin widths before interpreting a histogram.
+
+```{r compare-bins}
+ggplot(
+  EPAair, 
+  aes(x = AQI_PM2.5)
+  ) +
+  geom_histogram(
+    binwidth = 5, 
+    boundary = 0
+  ) +
+  labs(title = "A wider bin width smooths local variation")
+
+
+```
+
+A density curve can be useful for comparing distribution shape, but its area is normalized to one: it does not show group sample size. A rug or points can reconnect the smooth curve to observed values.
+
+## 5. Categories: counts versus supplied values
+
+`geom_bar()` counts rows. Use it when each row is an observation and the question is how many fall in each category.
+
+```{r}
+EPAair %>%
+  mutate(Local.Site.Name = as.factor(Local.Site.Name)) %>% 
+  ggplot(aes(x = Local.Site.Name)) +
+  geom_bar(fill = "steelblue") +
+  labs(x = NULL,y = "Number of observations")
+
+#If you want to flip plot
+EPAair %>%
+  mutate(Local.Site.Name = as.factor(Local.Site.Name)) %>% 
+  ggplot(aes(x = Local.Site.Name)) +
+  geom_bar(fill = "steelblue") +
+  labs(x = NULL,y = "Number of observations") +
+  coord_flip()
+
+#If you want to order by frequency 
+#fct_infreq() orders the categories from most frequent to least frequent.
+#fct_rev() reverses that order so most frequent are in the top of the plot
+
+EPAair %>%
+  mutate(Local.Site.Name = as.factor(Local.Site.Name)) %>% 
+  ggplot(aes(x = fct_rev(fct_infreq(Local.Site.Name)))) +
+  geom_bar(fill = "steelblue") +
+  labs(x = NULL,y = "Number of observations") +
+  coord_flip()
+
+```
+
+`geom_bar()`is used when you need a quick count. Another way to generate the same plot is with `geom_col()`. But geom_col needs an existing
+column with the count. The word `col` in `geom_col()` can help you
+remember that the bar height comes from a column in the dataset.
+
+```{r category-counts}
+EPAair %>%
+  count(Local.Site.Name) %>% # count() creates a new column named n containing those counts.
+  ggplot(aes(x = fct_reorder(Local.Site.Name, n), y = n)) +
+  geom_col(fill = "steelblue") +
+  coord_flip() +
+  labs(x = NULL, y = "Number of observations") #x=Null means no label for x axis
+```
+
+Here we summarized first, so `geom_col()` displays the supplied `n`
+values. If we had not summarized, `geom_bar(aes(x = Site.Name))` would count the rows for us. Ordering categories by value usually makes
+comparison faster than alphabetical order.
+
+Bar lengths encode magnitude, so a zero baseline is normally
+appropriate.
+
+## 6. Numeric values across categories
+
+A boxplot is compact and makes medians and quartiles easy to compare,but it can hide distribution shape and sample size.
+
+```{r boxplot-points}
+EPAair %>%
+  #Convert year to factor so you get one box plot for each year for comparison
+  mutate(Year = factor(Year)) %>% 
+  ggplot(aes(x = Year, y = AQI_PM2.5)) +
+  geom_boxplot() +
+  labs(x = NULL, y = expression(PM[2.5]~AQI)) 
+```
+
+Use a violin plot when distribution shape matters and each group has enough observations to estimate it. The smooth outline is an estimate,not raw data; consider overlaying a boxplot or points.
+
+```{r violin}
+ggplot(EPAair, aes(x = factor(Year), y = AQI_PM2.5)) +
+  geom_violin(fill = "lightblue", color = NA, trim = FALSE) +
+  labs(x = NULL, y = expression(PM[2.5]~AQI))
+
+```
+
+## 7. Two numeric variables: relationships
+
+A scatterplot shows direction, form, strength, clusters, and unusual observations. It does not establish causation.
+
+```{r scatterplot}
+ggplot(PeterPaul, aes(x = tp_ug, y = tn_ug)) +
+  geom_point(alpha = 0.45) + #alpha controls transparency of points
+  labs(x = expression("Total phosphorus"~(mu*g/L)),
+       y = expression("Total nitrogen"~(mu*g/L)))
+```
+
+Transparency helps with overplotting. For very dense data, consider
+smaller points with `geom_hex()`.
+
+Color can add a third variable, but only if it supports the question.
+Faceting is often easier than asking readers to decode too many
+aesthetics.
+
+```{r relationship-facets}
+ggplot(PeterPaul, aes(tp_ug, tn_ug, color = depth)) +
+  geom_point(alpha = 0.65) +
+  facet_wrap(vars(lakename)) +
+  scale_color_viridis_c(direction = -1) +
+  labs(x = expression("Total phosphorus"~(mu*g/L)),
+       y = expression("Total nitrogen"~(mu*g/L)),
+       color = "Depth")
+```
+
+A fitted line summarizes a pattern under model assumptions. Show
+uncertainty and describe it as an association—not proof that one
+variable causes the other.
+
+```{r fitted-line}
+ggplot(PeterPaul, aes(tp_ug, tn_ug)) +
+  geom_point(alpha = 0.35) +
+  geom_smooth(method = "lm", formula = y ~ x, se = TRUE)
+```
+
+## 8. Ordered data and time series
+
+Use a line when the order matters and adjacent observations belong to the same series. A line implies continuity between measurements; do not connect unrelated sites or groups.
+
+```{r time-series}
+EPAair %>%
+  filter(Local.Site.Name == "Leggett") %>%
+  arrange(Date) %>%
+  ggplot(aes(Date, AQI_PM2.5)) +
+  geom_line(linewidth = 0.35, color = "gray50") +
+  geom_point(size = 0.7, alpha = 0.6, color = "steelblue") +
+  labs(x = NULL, y = expression(PM[2.5]~AQI))
+```
+
+Points show the actual sampling dates; lines emphasize change. Irregular gaps should remain visible rather than being mistaken for continuous monitoring.
+
+## 9. Axes, transformations, and zooming
+
+`xlim()` and `ylim()` remove observations outside their limits. Use
+`coord_cartesian()` when you want to zoom without changing the data used by plot layers.
+
+```{r zooming}
+ggplot(PeterPaul, aes(irradianceWater, dissolvedOxygen)) +
+  geom_point(alpha = 0.5) +
+  coord_cartesian(xlim = c(0, 250), ylim = c(0, 20))
+```
+
+If extreme values may be measurement errors, investigate them. If they are valid, explain any zoom and consider a log transformation or an additional full-range panel rather than making them disappear.
+
+Domain conventions also matter. Depth is commonly displayed with the surface at the top.
+
+```{r reverse-depth}
+ggplot(PeterPaul, aes(temperature_C, depth)) +
+  geom_point(alpha = 0.5) +
+  scale_y_reverse() +
+  labs(x = "Temperature (°C)", y = "Depth")
+```
+
+## 10. Check before interpreting
+
+Before accepting a plot, ask:
+
+1.  Does it answer the stated question?
+2.  Are the variable types and units represented correctly?
+3.  How many observations are shown, and which were omitted?
+4.  Does aggregation hide variation or unequal sample sizes?
+5.  Do axes, transformations, color, and ordering support the
+    comparison?
+6.  Can the main pattern be described in one or two precise sentences?

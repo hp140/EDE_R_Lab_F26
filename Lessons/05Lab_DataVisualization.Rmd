@@ -1,0 +1,398 @@
+---
+title: "M5 - Lab 5 - Data Visualization"
+subtitle: "Environmental Data Exploration"
+author: "John Fay & Luana Lima"
+output: pdf_document
+geometry: margin=2.54cm
+editor_options:
+  chunk_output_type: console
+---
+
+## Setup
+
+```{r setup, message = FALSE, warning = FALSE}
+library(tidyverse)
+library(here)
+library(RColorBrewer)
+library(ggthemes)
+
+```
+
+## Import datasets
+
+```{r import-data, message = FALSE, warning = FALSE}
+PeterPaul.chem.nutrients <- read.csv(
+  here("Data/Processed_KEY/NTL-LTER_Lake_Chemistry_Nutrients_PeterPaul_Processed.csv")
+  ) %>% ymd(sampledate)
+
+EPAair <- read.csv(
+  here("Data/Processed_KEY/EPAair_O3_PM25_NC2425_Processed.csv")
+  ) %>% ymd(Date)
+
+Neonics <- Neonics <- read.table(
+  here("Data/Raw/ECOTOX_Neonicotinoids_Insects_raw.txt"),
+  header = TRUE,
+  sep = "|",
+  quote = "\"",   
+  comment.char = ""
+  )
+
+```
+
+---
+
+## Themes: controlling the non-data elements of a plot
+
+A theme controls the non-data elements of a figure. It does **not** change the
+values, variables, or geometry being displayed. Themes affect elements such as:
+
+- plot and panel backgrounds;
+- titles, subtitles, captions, and axis text;
+- grid lines and axis ticks;
+- legend appearance and position;
+- font family, size, color, and alignment.
+
+Complete themes, such as `theme_minimal()` or `theme_classic()`, establish an
+overall design. The `theme()` function then modifies individual elements. Add a
+complete theme before `theme()` so later, specific settings are not overwritten.
+
+```{r themes}
+surface_temp_1999_plot <- PeterPaul.chem.nutrients %>%
+  filter(depth == 0, year4 == 1999) %>%
+  ggplot(aes(x = sampledate, y = temperature_C, color = lakename)) +
+  geom_line(linewidth = 0.8) +
+  labs(
+    title = "Surface-water temperature in 1999",
+    subtitle = "Peter and Paul lakes",
+    x = NULL,
+    y = "Temperature (C)",
+    color = "Lake"
+  )
+
+
+surface_temp_1999_plot + theme_gray()
+surface_temp_1999_plot + theme_minimal()
+
+surface_temp_1999_plot +
+  theme_minimal(base_size = 11) +
+  theme(
+    plot.title = element_text(face = "bold"),
+    panel.grid.minor = element_blank(),
+    legend.position = "bottom"
+  )
+```
+
+When editing a theme, ask whether each element helps the reader. Major grid
+lines can support comparisons with the axes; minor grid lines may add clutter.
+A legend below a wide plot may work well, whereas direct labels may be better
+when only a few series are shown.
+
+```{r useful theme creation template}
+my_theme <- theme_base()  + 
+  theme(
+    #line =              element_line(),
+    #rect =              element_rect(),
+    #text =              element_text(),
+    
+    # Modified inheritance structure of text element
+    #plot.title =        element_text(),
+    #axis.title.x =      element_blank(),
+    #axis.title.y =      element_blank(),
+    #axis.text =         element_text(),
+    
+    # Modified inheritance structure of line element
+    #axis.ticks =        element_line(),
+    #panel.grid.major =  element_line(),
+    #panel.grid.minor =  element_blank(),
+    
+    # Modified inheritance structure of rect element
+    #plot.background =   element_rect(),
+    #panel.background =  element_rect(),
+    #legend.key =        element_rect(),
+    
+    # Modifiying legend.position
+    #legend.position = 'right',
+    
+    #complete = TRUE
+    )
+```
+
+
+```{r reusable-theme}
+course_theme <- theme_minimal(base_size = 11) +
+  theme(
+    plot.title = element_text(face = "bold", size = 13),
+    plot.subtitle = element_text(color = "grey30"),
+    axis.title = element_text(face = "bold"),
+    panel.grid.minor = element_blank(),
+    legend.position = "bottom",
+    strip.text = element_text(face = "bold")
+  )
+
+surface_temp_1999_plot + course_theme
+```
+
+
+**Discuss:** Which theme elements make the plot easier to read? Which changes are primarily stylistic?
+
+Resources:
+
+- <https://ggplot2.tidyverse.org/reference/theme.html>
+- <https://jrnold.github.io/ggthemes/>
+
+## Color scales and palettes
+
+Color should reflect the type of variable mapped to it.
+
+| Data represented by color | Appropriate palette | Example |
+|:--|:--|:--|
+| Categories with no inherent order | Qualitative | Lake, site, treatment |
+| Values from low to high | Sequential | Temperature, concentration, depth |
+| Values extending in two directions from a midpoint | Diverging | Change from baseline, anomaly, residual |
+
+Avoid using a continuous gradient for unrelated categories: the gradient
+suggests an order that does not exist. A rainbow palette also introduces uneven
+visual emphasis and is often difficult for readers with color-vision
+deficiencies.
+
+### ColorBrewer
+
+The `RColorBrewer` package provides qualitative, sequential, and diverging
+palettes designed for maps and other data visualizations.
+
+```{r colorbrewer-palettes}
+display.brewer.all(type = "qual")
+display.brewer.all(type = "seq")
+display.brewer.all(type = "div")
+
+surface_temp_1999_plot +
+  scale_color_brewer(palette = "Dark2") +
+  course_theme
+```
+
+For a discrete variable, use `scale_color_brewer()` or
+`scale_fill_brewer()`. Check the number of colors supported by a palette before
+using it for a variable with many categories.
+
+### Viridis
+
+Viridis palettes are perceptually uniform: equal changes in the data produce
+approximately equal perceived changes in color. They retain useful contrast
+when printed in grayscale and are designed to work better for common forms of
+color-vision deficiency.
+
+```{r viridis-example}
+PeterPaul.chem.nutrients %>%
+  filter(!is.na(temperature_C), !is.na(depth)) %>%
+  ggplot(aes(x = sampledate, y = temperature_C, color = depth)) +
+  geom_point(size = 0.7, alpha = 0.7) +
+  scale_color_viridis_c(
+    option = "magma",
+    direction = -1,
+    name = "Depth"
+  ) +
+  labs(x = NULL, y = "Temperature (degrees C)") +
+  course_theme
+```
+
+The `_c` suffix indicates a continuous scale; `_d` indicates a discrete scale.
+Changing `direction` from `1` to `-1` reverses the palette. The direction should
+support the meaning of the variable—for example, darker colors might
+intuitively represent greater depth.
+
+## Designing accessible plots
+
+Accessibility is not achieved by selecting one particular palette. Use several
+strategies together:
+
+1. Do not rely on color alone. When feasible, combine color with shape,
+   linetype, facets, or direct labels.
+2. Use sufficient contrast between marks, text, and the background.
+3. Use readable text and export the plot at an appropriate size.
+4. Limit the number of colors and use palettes designed for the variable type.
+5. Label variables and units clearly; do not make the reader decode column names.
+6. Check that categories remain distinguishable in grayscale and under common
+   color-vision-deficiency simulations.
+7. Use transparency carefully: it can reveal overlapping points, but very low
+   opacity can reduce contrast.
+
+Here, lake is represented by both color and linetype, so the distinction does
+not depend only on color.
+
+```{r redundant-cues}
+surface_temp_1999_plot +
+  aes(linetype = lakename) +
+  scale_color_brewer(palette = "Dark2") +
+  labs(linetype = "Lake") +
+  course_theme
+```
+
+**Discuss:** When might redundant cues improve a graph, and when might they make
+it too busy?
+
+---
+
+## Exercise 1: Temperature across years and lakes
+
+Use `PeterPaul.chem.nutrients` to plot surface-water temperature by day of year.
+
+**Plot requirements**
+
+1. Filter to surface observations (`depth == 0`) with non-missing temperatures.
+2. Map day of year to the x-axis and temperature to the y-axis.
+3. Map year to point color. Decide whether year should be a numeric gradient or
+   a categorical variable and choose a suitable scale.
+4. Use point size and transparency that make overlap visible.
+5. Facet by lake in two rows.
+6. Add an informative title, axis labels including units, and a clear color
+   legend title.
+7. Apply a readable theme and remove elements that do not help the comparison.
+
+```{r exercise-1, fig.height = 4.5, fig.width = 7, warning = FALSE}
+# Build the plot here.
+
+```
+
+**Interpretation**
+
+1. What seasonal pattern is visible in surface-water temperature?
+2. Do the timing or magnitude of peak temperatures differ between lakes?
+3. Is year easier to interpret as a continuous gradient or as separate
+   categories in this plot? Explain your choice.
+4. Where does overplotting occur, and how did your formatting address it?
+
+## Exercise 2: Temperature over time and depth
+
+Plot temperature across the full sampling record and use color for depth.
+
+**Plot requirements**
+
+1. Map sampling date to the x-axis, temperature to the y-axis, and depth to
+   point color.
+2. Use points with `size = 0.5` and select a suitable transparency.
+3. Apply the continuous viridis `magma` palette. Compare `direction = 1` and
+   `direction = -1`, then retain the direction that best communicates depth.
+4. Format the date axis with labeled breaks every five years.
+5. Use facets or another deliberate strategy to distinguish the lakes.
+6. Add a descriptive title, axis labels with units, and a useful legend title.
+7. Preserve useful reference lines without making the dense series harder to read.
+
+```{r exercise-2, fig.height = 4.5, fig.width = 7, warning = FALSE}
+# Build the plot here.
+
+```
+
+**Interpretation**
+
+1. How does temperature vary with depth?
+2. Does the relationship appear constant across seasons and years?
+3. Which palette direction did you choose, and what does the dark end convey?
+4. What is clarified—or hidden—by the way you separated the lakes?
+
+## Exercise 3: Relationship between ozone and PM2.5 AQI
+
+Use `EPAair` to examine the relationship between ozone and PM2.5 AQI values.
+
+**Plot requirements**
+
+1. Map ozone AQI to the x-axis and PM2.5 AQI to the y-axis.
+2. Map latitude to point color using an appropriate continuous palette.
+3. Make points 50% transparent and choose a size that keeps dense areas visible.
+4. Add a linear line of best fit. Decide whether its confidence interval helps.
+5. Use reader-friendly axis labels rather than original column names.
+6. Add a title and a legend title that describes latitude clearly.
+7. Apply formatting that focuses attention on the relationship.
+
+```{r exercise-3, fig.height = 4.5, fig.width = 6, warning = FALSE}
+# Build the plot here.
+
+```
+
+**Interpretation**
+
+1. Is the association positive, negative, or weak? What supports your answer?
+2. Are there clusters, outliers, or changes in spread that the fitted line hides?
+3. Does latitude reveal a meaningful spatial pattern?
+4. What does the fitted line summarize, and what can it **not** establish about
+   causation?
+
+## Exercise 4: Comparing PM2.5 AQI distributions by year
+
+Create and compare several plots of PM2.5 AQI grouped by year—for example, a
+boxplot, violin plot, ridge plot, or points combined with a summary.
+
+**Plot requirements**
+
+1. Treat year as a categorical variable.
+2. Create at least two reasonable plot types before selecting one.
+3. Use the same axis limits, labels, and ordering when comparing alternatives.
+4. Select a qualitative palette, or one neutral fill if color adds no information.
+5. Include an explanation of the AQI measure in the axis label.
+6. Make titles, text, and grid lines consistent across alternatives.
+7. Present the plot you think communicates the distribution most effectively.
+
+```{r exercise-4, fig.height = 4.5, fig.width = 6, warning = FALSE}
+# Create and compare candidate plots here.
+
+```
+
+**Interpretation**
+
+1. How do center, spread, skew, and potential outliers differ by year?
+2. Which distributional features are visible in your chosen plot type?
+3. What would a reader lose if you displayed only the mean for each year?
+4. Why is your selected plot more effective than the alternative you tested?
+
+## Exercise 5: Counts and factor order
+
+The graph below displays counts of endpoints measured in neonicotinoid ecotoxicology studies, but the default graph makes comparison difficult. 
+
+```{r}
+# Original plot
+ggplot(Neonics) +
+  geom_bar(aes(x = Endpoint.))
+```
+
+Improve it without changing the underlying data.
+
+- Use a single fill color unless color encodes additional information.
+- Put the most common endpoint at the top.
+- Use readable labels. You may need to orient the bars so endpoint names are easy to read.
+- State why `geom_bar()` or `count()` plus `geom_col()` is appropriate.
+
+```{r ordered-bars}
+# Improve the plot here.
+```
+
+> **Why did you choose this bar-chart workflow?**
+
+
+**Interpretation**
+
+1. Which endpoints appear most and least frequently?
+2. Why does ordering by frequency make the plot easier to interpret?
+3. Does color encode information in your revision? If not, why is a consistent
+   fill preferable?
+4. What is one conclusion supported by this figure, and what is one question it
+   cannot answer?
+
+## Exercise 6: Zoom without discarding data
+
+Create a scatterplot of `irradianceWater` and `dissolvedOxygen`. Zoom to x = 0–250 and y = 0–20 using `coord_cartesian()`.
+
+Then replace it temporarily with `xlim()` and `ylim()`. Record any warning and explain why the two methods are not analytically equivalent, especially when a smoother is included.
+
+```{r ordered-bars}
+# Add your code here
+```
+
+## Final check
+
+Before submitting or sharing any figure, ask:
+
+- Can a reader understand the main comparison without reading the code?
+- Are variables, units, and categories clearly labeled?
+- Is any distinction based on color alone?
+- Is the palette appropriate for the data type?
+- Are the text and symbols readable at the exported size?
+- Does every theme element support the message, or can something be removed?
