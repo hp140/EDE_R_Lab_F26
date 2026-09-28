@@ -1,6 +1,6 @@
 ---
 title: "Assignment 5: Data Visualization"
-author: "Student Name"
+author: "Henry Park"
 output: pdf_document
 geometry: margin=2.54cm
 fig_height: 3
