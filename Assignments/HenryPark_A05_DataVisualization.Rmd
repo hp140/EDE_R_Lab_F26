@@ -46,9 +46,21 @@ Niwot Ridge litter file (`NEON_NIWO_Litter_mass_trap_Processed.csv`) from the
 
 ```{r initialize project}
 #1 
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse);
+library(here);
+library(cowplot)
+
+getwd()
+
+PeterPaul <- read.csv(file=here('Data/Processed_KEY/NTL-LTER_Lake_Chemistry_Nutrients_PeterPaul_Processed.csv'))
+LitterMass <- read.csv(file=here('Data/Processed_KEY/NEON_NIWO_Litter_mass_trap_Processed.csv'))
 
 #2 
-
+PeterPaul$sampledate <- ymd(PeterPaul$sampledate)
+LitterMass$collectDate <- ymd(LitterMass$collectDate)
+class(PeterPaul$sampledate)
+class(LitterMass$collectDate)
 ```
 
 ## Define your theme
