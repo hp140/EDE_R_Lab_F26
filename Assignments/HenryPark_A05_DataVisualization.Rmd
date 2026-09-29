@@ -46,10 +46,10 @@ Niwot Ridge litter file (`NEON_NIWO_Litter_mass_trap_Processed.csv`) from the
 
 ```{r initialize project}
 #1 
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
 library(tidyverse);
 library(here);
-library(cowplot)
+library(cowplot);
 
 getwd()
 
@@ -79,7 +79,17 @@ changes improve readability.
 
 ```{r build plot theme}
 #3
-
+assignment_theme <- theme_minimal(base_size = 12) +
+  theme(
+    text = element_text(size = 12),
+    panel.background = element_rect(color = "lightblue"),
+    plot.title = (element_text(face = "bold",
+                               size = 16,
+                               color = "black")),
+    legend.position = "right",
+    axis.text = element_text(size = 14,
+                             color = "black")
+  )
 ```
 
 > Theme choices and rationale:
@@ -100,7 +110,21 @@ descriptive title, axis labels with units, and a meaningful legend title.
 
 ```{r plot total P vs PO4}
 #4 
+Q4 <- 
+  PeterPaul %>%
+  ggplot(aes(x = po4, y = tp_ug, linetype = factor(lakename))) +
+  geom_point(alpha = 0.5) +
+  facet_wrap(vars(lakename), nrow = 2) +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(title = "Plot of Phosphorus by Phosphate in Peter and Paul Lakes",
+       x = "Phosphate (po4)",
+       y = "Phosphorus (tp_ug)",
+       linetype = "tp_ug increase by po4 increase") +
+  coord_cartesian(xlim = c(0,50),
+                  ylim = c(0,150)) +
+  theme_minimal()
 
+Q4 + assignment_theme
 ```
 
 Question: What relationship do you observe between phosphate and total
