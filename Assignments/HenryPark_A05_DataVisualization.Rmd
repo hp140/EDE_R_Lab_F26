@@ -87,12 +87,14 @@ assignment_theme <- theme_minimal(base_size = 12) +
                                size = 16,
                                color = "black")),
     legend.position = "right",
-    axis.text = element_text(size = 14,
+    axis.title = element_text(face = "bold",
+                              size = 14),
+    axis.text = element_text(size = 11,
                              color = "black")
   )
 ```
 
-> Theme choices and rationale:
+> Theme choices and rationale: I chose the minimal theme as a base and adjusted text sizes for the large title and axis titles to make them more distinguishable and visible. I also slightly adjusted the elements on the axes themselves to be slightly bigger, and added a blue border around the actual plots to make them less intrusive on the graph. I mostly aimed to make a theme where the plot points themselves and the main titles popped out before any of the other graphical elements. 
 
 ## Create graphs
 For Questions 4–7, create `ggplot2` graphs and adjust their aesthetics using
@@ -122,9 +124,9 @@ Q4 <-
        linetype = "tp_ug increase by po4 increase") +
   coord_cartesian(xlim = c(0,50),
                   ylim = c(0,150)) +
-  theme_minimal()
+  assignment_theme
 
-Q4 + assignment_theme
+Q4
 ```
 
 Question: What relationship do you observe between phosphate and total
@@ -132,7 +134,7 @@ phosphorus? Does the relationship appear to differ between lakes? Identify any
 extreme observations and explain why zooming with `coord_cartesian()` is
 preferable to removing them with scale limits.
 
-> Answer:
+> Answer: For both lakes, the two appear to linearly increase with one another--when phosphate increases, total phosphorus increases as well. The relationship does slightly differ between lakes, as total phosphorus by phosphate rises more sharply in Peter Lake compared to Fall Lake, but is not significantly different in behavior. Zooming in with coord_cartesian is important as we can likely see the impact of an outlier value on the regression line for Paul Lake--showing that these outlier values do have a real impact on the conclusions we get from the data. Removing them outright may skew the data and make it inaccurate. 
 
 
 5. [NTL-LTER] Make three separate boxplots of (a) temperature, (b) TP, and (c)
@@ -150,15 +152,56 @@ to factor to order it.
 * Individual plots can have different sizes when combined using `cowplot`.
 
 ```{r Create boxplots}
-#5 
+PeterPaul <- PeterPaul %>%
+  mutate(Month = month(sampledate))
 
+#5 
+Q5Temp <-
+  PeterPaul %>%
+  ggplot(aes(x = Month, y = temperature_C, color = lakename)) +
+  geom_boxplot() +
+  labs(color = element_blank(),
+       x = "Month",
+       y = "Temperature (degrees Celsius)") +
+  assignment_theme +
+  theme(legend.position = "none")
+Q5Temp
+
+Q5TP <-
+  PeterPaul %>%
+  ggplot(aes(x = Month, y = tp_ug, color = lakename)) +
+  geom_boxplot() +
+  labs(color = element_blank(),
+       x = "Month",
+       y = "Total Phosphorus (tp_ug)") +
+  assignment_theme +
+  theme(legend.position = "none")
+Q5TP
+
+Q5TN <-
+  PeterPaul %>%
+  ggplot(aes(x = Month, y = tn_ug, color = lakename)) +
+  geom_boxplot() +
+  labs(color = element_blank(),
+       x = "Month",
+       y = "Total Nitrogen (tn_ug)") +
+  assignment_theme +
+  theme(legend.position = "none")
+Q5TN
+
+CombinedLegend <- get_legend(Q5Temp + assignment_theme)
+
+Q5Combined <- plot_grid(Q5Temp, Q5TP, Q5TN, 
+                        labels = c("Temperature", "TP", "TN"), 
+                        CombinedLegend, ncol = 4)
+Q5Combined
 ```
 
 Question: What do you observe about the center, spread, and potential outliers
 of each variable across seasons and between lakes? Support your interpretation
 with specific features visible in the boxplots.
 
-> Answer: 
+> Answer: Paul Lake appears to have slightly higher temperatures, while Peter Lake appears to have higher total amounts of phosphorus and nitrogen in the water. Comparing the phosphorus and nitrogen values, Paul Lake's values appear more bunched up in line with one another, while Peter Lake has more outlier values in comparison. However, the boxplots themselves indicate that taken in aggregate, the median values between the two lakes are not far off from one another. 
 
 6. [Niwot Ridge] Subset the litter dataset to the `"Needles"` functional group.
 Plot dry mass of needle litter by date and distinguish NLCD classes using a
@@ -173,11 +216,33 @@ the effect of faceting itself.
 
 ```{r Plot litter}
 #6
+Needle_Litter <-
+  LitterMass %>%
+  filter(functionalGroup == 'Needles')
 
+Needle_Graph <-
+  Needle_Litter %>%
+  ggplot(aes(x = collectDate, y = dryMass, color = nlcdClass)) +
+  geom_point(alpha = 0.7) +
+  labs(title = "Needle Litter Dry Mass by NLCD Classes",
+       color = "NLCD Classes",
+       x = "Collection Dates",
+       y = "Dry Mass") +
+  assignment_theme
+Needle_Graph
 
 #7
-
-
+Needle_Facet <-
+  Needle_Litter %>%
+  ggplot(aes(x = collectDate, y = dryMass)) +
+  geom_point(alpha = 0.7) +
+  facet_wrap(vars(nlcdClass)) +
+  labs(title = "Needle Litter Dry Mass by NLCD Classes",
+       color = "NLCD Classes",
+       x = "Collection Dates",
+       y = "Dry Mass") +
+  assignment_theme
+Needle_Facet
 ```
 
 ## AI comparison
@@ -186,9 +251,9 @@ the effect of faceting itself.
 
 Paste the exact prompt you used below:
 
-> AI tool used:
+> AI tool used: Google
 
-> AI prompt:
+> AI prompt: Using the Needle_Litter dataframe, make a ggplot titled "Dry Mass of Needle Litter Over Time" graphing dryMass by collectDate and distinguishing nlcdClasses separated into facets.
 
 Run and inspect the AI-generated code, correcting only errors required to make
 it run. If you make corrections, identify them. Then compare the two solutions.
@@ -196,13 +261,34 @@ it run. If you make corrections, identify them. Then compare the two solutions.
 ```{r AI solution}
 # Paste the AI-generated code here. Clearly comment any corrections you make.
 
+Needle_AI <-
+  Needle_Litter %>%
+  ggplot(aes(x = collectDate, y = dryMass)) +
+  geom_point(alpha = 0.6) + 
+  facet_wrap(~ nlcdClass, scales = "free_y") +
+  theme_minimal() +                             
+  labs(
+    title = "Dry Mass of Needle Litter Over Time",
+    x = "Date",
+    y = "Dry Mass (g)",
+    color = "NLCD Class"
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+Needle_AI
+
+#Corrections: On the ggplot function, there was an incorrect argument with a 
+#'data' function.
+#Corrections: On initial creation, the graph connected all of the dots in the 
+#plot. That function was removed.
+#Corrections: Color was initially added to the geom_point line. 
+
 ```
 
 9. Which plot—your solution or the AI solution—more effectively communicates the data? Evaluate at least three specific choices, such as data filtering, facet structure, date-axis formatting, labels and units, theme, accessibility, or unnecessary code. Identify one useful idea from the AI
 solution and one choice you would reject or improve. If the solutions are very similar, explain why both approaches are appropriate.
 
-> AI comparison:
+> AI comparison: While there are not any particular differences in the general 'functionality' of the graph--that is, just the ability to see the spread of data throughout the plot--the theming we set for the assignment prior to starting made the manually-created one easier to read and interpret. The AI did attempt to include colors along with the facet map, which could be a nice visual touch (while not strictly necessary because the points are already faceted, it would just help further distinguish the different land classes). For the purposes of making the graph in this assignment, both were adequately fine barring some slight manual tuning of the AI-generated one. 
 
 10. Question: Which encoding in Questions 6 and 7—color or facets—do you think is more effective for comparing NLCD classes, and why? Consider overlap, ease of comparison, accessibility, and the amount of space used by each figure.
 
-> Answer: 
+> Answer: When it came to my results, I found that the faceted graphs felt easier to interpret and compare. I think the spacing out of all of the results made finding patterns easier to see-that being said, I can also see a strong benefit in placing all three categories into the same graph distinguished by color so that I can start plotting out patterns all on the same plot. For avoiding overlap, I much preferred the faceted graph--but I can see the value of the color graph for being more economical with space and making it easier to directly compare patterns. 
