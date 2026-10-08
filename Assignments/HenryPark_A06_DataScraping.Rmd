@@ -26,9 +26,10 @@ This exercise accompanies the lessons in Environmental Data Analytics on data sc
 * Check your working directory
 
 ```{r 1. Project Setup, message = FALSE}
-#1 
-
-
+#1 Loading tidyverse and rvest, and changing knit settings to show code
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
+library(tidyverse)
+library(rvest)
 ```
 
 2. We will be scraping data from the NC DEQs Local Water Supply Planning website, specifically the Durham's 2024 Municipal Local Water Supply Plan (LWSP): 
