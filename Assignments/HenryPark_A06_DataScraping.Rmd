@@ -41,7 +41,9 @@ Indicate this website as the as the URL to be scraped. (In other words, read the
 
 ```{r set.the.scraping.website}
 #2 
+waterurl = paste0("https://www.ncwater.org/WUDC/app/LWSP/report.php?pwsid=03-32-010&year=2024")
 
+durhamwater <- read.csv(waterurl)
 ```
 
 3. The data we want to collect are listed below:
